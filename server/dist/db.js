@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.now = exports.db = void 0;
 exports.initSchema = initSchema;
 const better_sqlite3_1 = __importDefault(require("better-sqlite3"));
-exports.db = new better_sqlite3_1.default('tendercrm.db');
+exports.db = new better_sqlite3_1.default(process.env.DB_PATH || 'tendercrm.db');
 function initSchema() {
     exports.db.exec(`
   PRAGMA foreign_keys = ON;

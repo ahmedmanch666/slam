@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>مدير المناقصات والعقود والمبيعات (أوفلاين)</title>
+  <script src="./config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <style>
@@ -161,6 +162,7 @@
     // Local store (LocalStorage JSON)
     // =============================
     const STORE_KEY = 'tcrm_offline_v1';
+    const AUTH_KEY = 'tcrm_auth_v1';
     const defaultState = () => ({
       meta: { lastSavedAt: null },
       companies: [],
@@ -207,6 +209,81 @@
     }
 
     let state = loadState();
+
+    function loadAuth() {
+      try {
+        const raw = localStorage.getItem(AUTH_KEY);
+        if (!raw) return { accessToken: null, refreshToken: null, role: null, email: null };
+        const a = JSON.parse(raw);
+        return { accessToken: a.accessToken || null, refreshToken: a.refreshToken || null, role: a.role || null, email: a.email || null };
+      } catch {
+        return { accessToken: null, refreshToken: null, role: null, email: null };
+      }
+    }
+
+    function saveAuth(auth) {
+      localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
+    }
+
+    function clearAuth() {
+      try { localStorage.removeItem(AUTH_KEY); } catch {}
+    }
+
+    let authState = loadAuth();
+
+    const API_BASE = window.__API_BASE__ || "http://localhost:4000";
+
+    async function apiFetch(path, opts = {}) {
+      const url = path.startsWith('http') ? path : `${API_BASE}${path}`;
+      const headers = new Headers(opts.headers || {});
+      if (!headers.has('Content-Type') && opts.body) headers.set('Content-Type', 'application/json');
+      if (authState?.accessToken) headers.set('Authorization', `Bearer ${authState.accessToken}`);
+
+      const doReq = async () => {
+        const res = await fetch(url, { ...opts, headers, credentials: 'include' });
+        return res;
+      };
+
+      let res = await doReq();
+      if (res.status !== 401) return res;
+
+      if (!authState?.refreshToken) return res;
+      const refreshed = await refreshAccessToken();
+      if (!refreshed) return res;
+      headers.set('Authorization', `Bearer ${authState.accessToken}`);
+      return await doReq();
+    }
+
+    async function refreshAccessToken() {
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ refreshToken: authState.refreshToken })
+        });
+        if (!res.ok) return false;
+        const data = await res.json();
+        if (!data?.accessToken) return false;
+        authState = { ...authState, accessToken: data.accessToken };
+        saveAuth(authState);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    async function logoutServer() {
+      try {
+        if (!authState?.refreshToken) return;
+        await fetch(`${API_BASE}/api/auth/logout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ refreshToken: authState.refreshToken })
+        });
+      } catch {}
+    }
 
     function renderShellMeta() {
       const size = new Blob([localStorage.getItem(STORE_KEY) || '']).size;
@@ -588,14 +665,12 @@
       renderRoute();
     }
 
-    function logout() {
-      try {
-        localStorage.removeItem(STORE_KEY);
-      } catch {}
-      state = defaultState();
-      renderShellMeta();
+    async function logout() {
       document.body.classList.remove('drawer-open');
-      location.hash = '#/home';
+      await logoutServer();
+      authState = { accessToken: null, refreshToken: null, role: null, email: null };
+      clearAuth();
+      location.hash = '#/login';
     }
 
     function renderNav(activeRoute, userRole, counts) {
@@ -676,7 +751,7 @@
     }
 
     function applyNav(activeRoute) {
-      const userRole = 'admin';
+      const userRole = authState?.role || null;
       const companiesCount = Array.isArray(state?.companies) ? state.companies.length : 0;
       const overdueTasksCount = Array.isArray(state?.tasks) ? state.tasks.filter(t => computeTaskStatus(t) === 'OVERDUE').length : 0;
       const counts = { companies: companiesCount, overdueTasks: overdueTasksCount };
@@ -709,13 +784,33 @@
 
       const hashFull = location.hash || '#/home';
       const activeHash = hashFull.split('?')[0] || '#/home';
-      applyNav(activeHash);
+      const [pathOnly] = hashFull.replace('#','').split('?');
+
+      const isAuthRoute = pathOnly === '/login' || pathOnly === '/register';
+      const isAuthed = !!authState?.accessToken;
+
+      if (!isAuthed && !isAuthRoute) {
+        location.hash = '#/login';
+        return;
+      }
+
+      if (isAuthed) {
+        applyNav(activeHash);
+      } else {
+        const sidebar = $('#navSidebar');
+        if (sidebar) sidebar.innerHTML = '';
+        const mobile = $('#navMobile');
+        if (mobile) mobile.innerHTML = '';
+      }
 
       const [path, qStr] = hashFull.replace('#','').split('?');
       const q = new URLSearchParams(qStr || '');
 
       const content = $('#content');
       content.innerHTML = '';
+
+      if (path === '/login') return renderLogin(content, q);
+      if (path === '/register') return renderRegister(content, q);
 
       if (path === '/home') return renderHome(content);
       if (path === '/companies') return renderCompanies(content, q);
@@ -741,6 +836,114 @@
         <div class="text-sm font-bold">هذه الصفحة قيد الإنشاء</div>
         <div class="text-sm text-slate-600 mt-2 leading-7">سيتم إضافة إعدادات إضافية لاحقاً. حالياً يمكنك استخدام صفحات النسخ الاحتياطي و مولّد Android.</div>
       `;
+      root.appendChild(box);
+    }
+
+    function renderLogin(root, q) {
+      setPage('تسجيل الدخول', 'أدخل البريد وكلمة المرور للوصول إلى التطبيق.');
+
+      const box = document.createElement('div');
+      box.className = 'bg-white border border-slate-200 rounded-2xl p-4 shadow-soft max-w-xl mx-auto';
+
+      const fEmail = mkField({ label: 'البريد الإلكتروني', type: 'email', value: q.get('email') || authState?.email || '', placeholder: 'name@example.com' });
+      const fPass = mkField({ label: 'كلمة المرور', type: 'password', value: '', placeholder: '********' });
+      box.appendChild(fEmail.wrap);
+      box.appendChild(fPass.wrap);
+
+      const row = document.createElement('div');
+      row.className = 'mt-4 flex flex-col sm:flex-row gap-2 min-w-0';
+
+      const btnLogin = mkBtn('دخول', 'primary', async () => {
+        const email = fEmail.input.value.trim();
+        const password = fPass.input.value;
+        if (!email || !password) return alert('أدخل البريد وكلمة المرور.');
+        btnLogin.disabled = true;
+        btnLogin.classList.add('opacity-60');
+        try {
+          const res = await fetch(`${API_BASE}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ email, password })
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) return alert(data?.error || 'فشل تسجيل الدخول');
+          authState = { accessToken: data.accessToken, refreshToken: data.refreshToken, role: data.role || null, email };
+          saveAuth(authState);
+          location.hash = '#/home';
+        } finally {
+          btnLogin.disabled = false;
+          btnLogin.classList.remove('opacity-60');
+        }
+      });
+
+      const btnRegister = mkBtn('إنشاء حساب', 'secondary', () => {
+        const email = fEmail.input.value.trim();
+        location.hash = email ? `#/register?email=${encodeURIComponent(email)}` : '#/register';
+      });
+
+      row.appendChild(btnLogin);
+      row.appendChild(btnRegister);
+      box.appendChild(row);
+
+      const hint = document.createElement('div');
+      hint.className = 'text-xs text-slate-500 mt-4 leading-6';
+      hint.textContent = 'ملاحظة: أول حساب يتم إنشاؤه يصبح مدير (admin) تلقائياً.';
+      box.appendChild(hint);
+
+      root.appendChild(box);
+    }
+
+    function renderRegister(root, q) {
+      setPage('إنشاء حساب', 'سجّل بريدك وكلمة مرور (8 أحرف على الأقل).');
+
+      const box = document.createElement('div');
+      box.className = 'bg-white border border-slate-200 rounded-2xl p-4 shadow-soft max-w-xl mx-auto';
+
+      const fEmail = mkField({ label: 'البريد الإلكتروني', type: 'email', value: q.get('email') || '', placeholder: 'name@example.com' });
+      const fPass = mkField({ label: 'كلمة المرور', type: 'password', value: '', placeholder: '********' });
+      const fPass2 = mkField({ label: 'تأكيد كلمة المرور', type: 'password', value: '', placeholder: '********' });
+      box.appendChild(fEmail.wrap);
+      box.appendChild(fPass.wrap);
+      box.appendChild(fPass2.wrap);
+
+      const row = document.createElement('div');
+      row.className = 'mt-4 flex flex-col sm:flex-row gap-2 min-w-0';
+
+      const btnCreate = mkBtn('إنشاء', 'primary', async () => {
+        const email = fEmail.input.value.trim();
+        const password = fPass.input.value;
+        const password2 = fPass2.input.value;
+        if (!email || !password) return alert('أدخل البريد وكلمة المرور.');
+        if (password.length < 8) return alert('كلمة المرور يجب أن تكون 8 أحرف على الأقل.');
+        if (password !== password2) return alert('كلمتا المرور غير متطابقتين.');
+        btnCreate.disabled = true;
+        btnCreate.classList.add('opacity-60');
+        try {
+          const res = await fetch(`${API_BASE}/api/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ email, password })
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) return alert(data?.error || 'فشل إنشاء الحساب');
+          location.hash = `#/login?email=${encodeURIComponent(email)}`;
+        } finally {
+          btnCreate.disabled = false;
+          btnCreate.classList.remove('opacity-60');
+        }
+      });
+
+      const btnBack = mkBtn('رجوع لتسجيل الدخول', 'secondary', () => {
+        const email = fEmail.input.value.trim();
+        location.hash = email ? `#/login?email=${encodeURIComponent(email)}` : '#/login';
+      });
+
+      row.appendChild(btnCreate);
+      row.appendChild(btnBack);
+      box.appendChild(row);
+
       root.appendChild(box);
     }
 

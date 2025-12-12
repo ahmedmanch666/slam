@@ -1,0 +1,9 @@
+{
+  "name": "slam-vercel",
+  "private": true,
+  "version": "1.0.0",
+  "type": "commonjs",
+  "dependencies": {
+    "jsonwebtoken": "^9.0.0"
+  }
+}

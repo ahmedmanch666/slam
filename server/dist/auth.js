@@ -9,6 +9,7 @@ const db_1 = require("./db");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const zod_1 = require("zod");
+const node_crypto_1 = require("crypto");
 const ACCESS_TTL_MS = 15 * 60 * 1000;
 const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'CHANGE_ME_ACCESS';
@@ -38,7 +39,7 @@ async function authRoutes(app) {
             if (!isFirstUser && role === 'admin') {
                 return reply.code(403).send({ error: 'غير مسموح بإنشاء مدير جديد' });
             }
-            const id = crypto.randomUUID();
+            const id = globalThis.crypto?.randomUUID?.() || (0, node_crypto_1.randomUUID)();
             const hash = bcryptjs_1.default.hashSync(parsed.password, 12);
             db_1.db.prepare('INSERT INTO users (id,email,password_hash,role,created_at) VALUES (?,?,?,?,?)')
                 .run(id, parsed.email, hash, role, (0, db_1.now)());
