@@ -845,18 +845,40 @@
       const box = document.createElement('div');
       box.className = 'bg-white border border-slate-200 rounded-2xl p-4 shadow-soft max-w-xl mx-auto';
 
+      const form = document.createElement('form');
+
       const fEmail = mkField({ label: 'البريد الإلكتروني', type: 'email', value: q.get('email') || authState?.email || '', placeholder: 'name@example.com' });
       const fPass = mkField({ label: 'كلمة المرور', type: 'password', value: '', placeholder: '********' });
-      box.appendChild(fEmail.wrap);
-      box.appendChild(fPass.wrap);
+
+      fEmail.input.id = 'loginEmail';
+      fPass.input.id = 'loginPassword';
+
+      form.appendChild(fEmail.wrap);
+      form.appendChild(fPass.wrap);
 
       const row = document.createElement('div');
       row.className = 'mt-4 flex flex-col sm:flex-row gap-2 min-w-0';
 
-      const btnLogin = mkBtn('دخول', 'primary', async () => {
-        const email = fEmail.input.value.trim();
-        const password = fPass.input.value;
+      const btnLogin = mkBtn('دخول', 'primary', () => {});
+      btnLogin.type = 'submit';
+
+      const btnRegister = mkBtn('إنشاء حساب', 'secondary', () => {
+        const email = (document.getElementById('loginEmail')?.value || '').trim();
+        location.hash = email ? `#/register?email=${encodeURIComponent(email)}` : '#/register';
+      });
+      btnRegister.type = 'button';
+
+      row.appendChild(btnLogin);
+      row.appendChild(btnRegister);
+      form.appendChild(row);
+
+      form.onsubmit = async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        console.log('login values', { email, passwordLen: password.length });
         if (!email || !password) return alert('أدخل البريد وكلمة المرور.');
+
         btnLogin.disabled = true;
         btnLogin.classList.add('opacity-60');
         try {
@@ -871,20 +893,14 @@
           authState = { accessToken: data.accessToken, refreshToken: data.refreshToken, role: data.role || null, email };
           saveAuth(authState);
           location.hash = '#/home';
+          renderRoute();
         } finally {
           btnLogin.disabled = false;
           btnLogin.classList.remove('opacity-60');
         }
-      });
+      };
 
-      const btnRegister = mkBtn('إنشاء حساب', 'secondary', () => {
-        const email = fEmail.input.value.trim();
-        location.hash = email ? `#/register?email=${encodeURIComponent(email)}` : '#/register';
-      });
-
-      row.appendChild(btnLogin);
-      row.appendChild(btnRegister);
-      box.appendChild(row);
+      box.appendChild(form);
 
       const hint = document.createElement('div');
       hint.className = 'text-xs text-slate-500 mt-4 leading-6';
