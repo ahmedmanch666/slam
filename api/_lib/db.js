@@ -2,6 +2,7 @@ const { createClient } = require('@libsql/client');
 
 // Turso Database Connection
 let _db = null;
+let _initialized = false;
 
 function getDb() {
     if (_db) return _db;
@@ -9,9 +10,11 @@ function getDb() {
     const url = process.env.TURSO_DATABASE_URL;
     const authToken = process.env.TURSO_AUTH_TOKEN;
 
+    console.log('Connecting to Turso...', { urlExists: !!url, tokenExists: !!authToken });
+
     if (!url) {
         console.error('Missing TURSO_DATABASE_URL environment variable');
-        throw new Error('Database not configured');
+        throw new Error('Database not configured: Missing TURSO_DATABASE_URL');
     }
 
     _db = createClient({
@@ -24,37 +27,45 @@ function getDb() {
 
 // Initialize database schema
 async function initDb() {
-    const db = getDb();
+    if (_initialized) return;
 
-    // Create users table
-    await db.execute(`
-    CREATE TABLE IF NOT EXISTS users (
-      id TEXT PRIMARY KEY,
-      email TEXT UNIQUE NOT NULL,
-      password_hash TEXT NOT NULL,
-      role TEXT DEFAULT 'user',
-      created_at INTEGER DEFAULT (unixepoch() * 1000)
-    )
-  `);
+    try {
+        const db = getDb();
 
-    // Create refresh_tokens table
-    await db.execute(`
-    CREATE TABLE IF NOT EXISTS refresh_tokens (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      token TEXT UNIQUE NOT NULL,
-      user_id TEXT NOT NULL,
-      expires_at INTEGER NOT NULL,
-      revoked INTEGER DEFAULT 0,
-      created_at INTEGER DEFAULT (unixepoch() * 1000),
-      FOREIGN KEY (user_id) REFERENCES users(id)
-    )
-  `);
+        // Create users table
+        await db.execute(`
+        CREATE TABLE IF NOT EXISTS users (
+          id TEXT PRIMARY KEY,
+          email TEXT UNIQUE NOT NULL,
+          password_hash TEXT NOT NULL,
+          role TEXT DEFAULT 'user',
+          created_at INTEGER DEFAULT (unixepoch() * 1000)
+        )
+      `);
 
-    // Create index for faster lookups
-    await db.execute(`CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token ON refresh_tokens(token)`);
-    await db.execute(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
+        // Create refresh_tokens table
+        await db.execute(`
+        CREATE TABLE IF NOT EXISTS refresh_tokens (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          token TEXT UNIQUE NOT NULL,
+          user_id TEXT NOT NULL,
+          expires_at INTEGER NOT NULL,
+          revoked INTEGER DEFAULT 0,
+          created_at INTEGER DEFAULT (unixepoch() * 1000),
+          FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+      `);
 
-    console.log('Database schema initialized');
+        // Create index for faster lookups
+        await db.execute(`CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token ON refresh_tokens(token)`);
+        await db.execute(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
+
+        _initialized = true;
+        console.log('Database schema initialized successfully');
+    } catch (err) {
+        console.error('Failed to initialize database:', err.message);
+        throw err;
+    }
 }
 
 // User operations
