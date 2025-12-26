@@ -1,39 +1,46 @@
 const crypto = require('crypto');
 const { json, readJson } = require('../_lib/http');
-const { withStore } = require('../_lib/store');
 const { hashPassword } = require('../_lib/password');
+const { initDb, findUserByEmail, createUser, countUsers } = require('../_lib/db');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return json(res, 405, { error: 'Method not allowed' });
 
-  const body = await readJson(req);
-  if (!body) return json(res, 400, { error: 'Invalid JSON' });
+  try {
+    // Initialize database on first request
+    await initDb();
 
-  const email = String(body.email || '').trim().toLowerCase();
-  const password = String(body.password || '');
+    const body = await readJson(req);
+    if (!body) return json(res, 400, { error: 'Invalid JSON' });
 
-  if (!email || !email.includes('@')) return json(res, 400, { error: 'البريد غير صالح' });
-  if (password.length < 8) return json(res, 400, { error: 'كلمة المرور قصيرة' });
+    const email = String(body.email || '').trim().toLowerCase();
+    const password = String(body.password || '');
 
-  const result = withStore((store) => {
-    const exists = store.users.find(u => u.email === email);
-    if (exists) return { ok: false, code: 409, error: 'البريد مستخدم بالفعل' };
+    if (!email || !email.includes('@')) return json(res, 400, { error: 'البريد غير صالح' });
+    if (password.length < 8) return json(res, 400, { error: 'كلمة المرور قصيرة' });
 
-    const isFirstUser = store.users.length === 0;
-    const id = crypto.randomUUID();
+    // Check if email already exists
+    const exists = await findUserByEmail(email);
+    if (exists) return json(res, 409, { error: 'البريد مستخدم بالفعل' });
+
+    // First user becomes admin
+    const userCount = await countUsers();
+    const isFirstUser = userCount === 0;
     const role = isFirstUser ? 'admin' : 'user';
 
-    store.users.push({
+    const id = crypto.randomUUID();
+
+    // Create user in database
+    await createUser({
       id,
       email,
       password_hash: hashPassword(password),
-      role,
-      created_at: Date.now()
+      role
     });
 
-    return { ok: true, code: 200 };
-  });
-
-  if (!result.ok) return json(res, result.code, { error: result.error });
-  return json(res, 200, { ok: true });
+    return json(res, 200, { ok: true, message: isFirstUser ? 'تم إنشاء حساب المدير بنجاح' : 'تم إنشاء الحساب بنجاح' });
+  } catch (err) {
+    console.error('Register error:', err);
+    return json(res, 500, { error: 'خطأ في الخادم' });
+  }
 };

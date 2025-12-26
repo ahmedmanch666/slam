@@ -1,0 +1,135 @@
+const { createClient } = require('@libsql/client');
+
+// Turso Database Connection
+let _db = null;
+
+function getDb() {
+    if (_db) return _db;
+
+    const url = process.env.TURSO_DATABASE_URL;
+    const authToken = process.env.TURSO_AUTH_TOKEN;
+
+    if (!url) {
+        console.error('Missing TURSO_DATABASE_URL environment variable');
+        throw new Error('Database not configured');
+    }
+
+    _db = createClient({
+        url,
+        authToken
+    });
+
+    return _db;
+}
+
+// Initialize database schema
+async function initDb() {
+    const db = getDb();
+
+    // Create users table
+    await db.execute(`
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      role TEXT DEFAULT 'user',
+      created_at INTEGER DEFAULT (unixepoch() * 1000)
+    )
+  `);
+
+    // Create refresh_tokens table
+    await db.execute(`
+    CREATE TABLE IF NOT EXISTS refresh_tokens (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      token TEXT UNIQUE NOT NULL,
+      user_id TEXT NOT NULL,
+      expires_at INTEGER NOT NULL,
+      revoked INTEGER DEFAULT 0,
+      created_at INTEGER DEFAULT (unixepoch() * 1000),
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+  `);
+
+    // Create index for faster lookups
+    await db.execute(`CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token ON refresh_tokens(token)`);
+    await db.execute(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
+
+    console.log('Database schema initialized');
+}
+
+// User operations
+async function findUserByEmail(email) {
+    const db = getDb();
+    const result = await db.execute({
+        sql: 'SELECT * FROM users WHERE email = ?',
+        args: [email]
+    });
+    return result.rows[0] || null;
+}
+
+async function findUserById(id) {
+    const db = getDb();
+    const result = await db.execute({
+        sql: 'SELECT * FROM users WHERE id = ?',
+        args: [id]
+    });
+    return result.rows[0] || null;
+}
+
+async function createUser({ id, email, password_hash, role }) {
+    const db = getDb();
+    await db.execute({
+        sql: 'INSERT INTO users (id, email, password_hash, role) VALUES (?, ?, ?, ?)',
+        args: [id, email, password_hash, role]
+    });
+}
+
+async function countUsers() {
+    const db = getDb();
+    const result = await db.execute('SELECT COUNT(*) as count FROM users');
+    return result.rows[0]?.count || 0;
+}
+
+// Refresh token operations
+async function saveRefreshToken({ token, user_id, expires_at }) {
+    const db = getDb();
+    await db.execute({
+        sql: 'INSERT INTO refresh_tokens (token, user_id, expires_at) VALUES (?, ?, ?)',
+        args: [token, user_id, expires_at]
+    });
+}
+
+async function findRefreshToken(token) {
+    const db = getDb();
+    const result = await db.execute({
+        sql: 'SELECT * FROM refresh_tokens WHERE token = ?',
+        args: [token]
+    });
+    return result.rows[0] || null;
+}
+
+async function revokeRefreshToken(token) {
+    const db = getDb();
+    await db.execute({
+        sql: 'UPDATE refresh_tokens SET revoked = 1 WHERE token = ?',
+        args: [token]
+    });
+}
+
+// Helper to get current timestamp
+function now() {
+    return Date.now();
+}
+
+module.exports = {
+    getDb,
+    initDb,
+    findUserByEmail,
+    findUserById,
+    createUser,
+    countUsers,
+    saveRefreshToken,
+    findRefreshToken,
+    revokeRefreshToken,
+    now
+};
