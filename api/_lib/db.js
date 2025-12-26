@@ -106,10 +106,22 @@ async function initDb() {
           value REAL,
           submission_date INTEGER,
           notes TEXT,
+          sample_date INTEGER,
+          proof_date INTEGER,
+          delivery_duration TEXT,
+          vat_status TEXT,
+          gm_instructions TEXT,
+          dm_instructions TEXT,
           created_at INTEGER DEFAULT (unixepoch() * 1000),
           FOREIGN KEY (user_id) REFERENCES users(id)
         )
       `);
+
+    // Migration: Add missing columns to tenders if they don't exist
+    const tenderColumns = ['sample_date', 'proof_date', 'delivery_duration', 'vat_status', 'gm_instructions', 'dm_instructions'];
+    for (const col of tenderColumns) {
+      try { await db.execute(`ALTER TABLE tenders ADD COLUMN ${col} TEXT`); } catch { }
+    }
 
     // Create contracts table
     await db.execute(`
@@ -161,6 +173,62 @@ async function initDb() {
         )
       `);
 
+    // Create tender_items table
+    await db.execute(`
+        CREATE TABLE IF NOT EXISTS tender_items (
+          id TEXT PRIMARY KEY,
+          tender_id TEXT NOT NULL,
+          name TEXT NOT NULL,
+          quantity REAL,
+          specifications TEXT,
+          delivery_schedule TEXT,
+          created_at INTEGER DEFAULT (unixepoch() * 1000),
+          FOREIGN KEY (tender_id) REFERENCES tenders(id) ON DELETE CASCADE
+        )
+      `);
+
+    // Create tender_competitors table
+    await db.execute(`
+        CREATE TABLE IF NOT EXISTS tender_competitors (
+          id TEXT PRIMARY KEY,
+          tender_id TEXT NOT NULL,
+          name TEXT NOT NULL,
+          details TEXT,
+          price REAL,
+          is_winner INTEGER DEFAULT 0,
+          created_at INTEGER DEFAULT (unixepoch() * 1000),
+          FOREIGN KEY (tender_id) REFERENCES tenders(id) ON DELETE CASCADE
+        )
+      `);
+
+    // Create tender_attachments table
+    await db.execute(`
+        CREATE TABLE IF NOT EXISTS tender_attachments (
+          id TEXT PRIMARY KEY,
+          tender_id TEXT NOT NULL,
+          type TEXT,
+          url TEXT NOT NULL,
+          description TEXT,
+          created_at INTEGER DEFAULT (unixepoch() * 1000),
+          FOREIGN KEY (tender_id) REFERENCES tenders(id) ON DELETE CASCADE
+        )
+      `);
+
+    // Create invoices table
+    await db.execute(`
+        CREATE TABLE IF NOT EXISTS invoices (
+          id TEXT PRIMARY KEY,
+          tender_id TEXT NOT NULL,
+          date INTEGER,
+          amount REAL,
+          quantity REAL,
+          vat_amount REAL,
+          details TEXT,
+          created_at INTEGER DEFAULT (unixepoch() * 1000),
+          FOREIGN KEY (tender_id) REFERENCES tenders(id) ON DELETE CASCADE
+        )
+      `);
+
     // Create indexes for faster lookups
     await db.execute(`CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token ON refresh_tokens(token)`);
     await db.execute(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
@@ -168,6 +236,10 @@ async function initDb() {
     await db.execute(`CREATE INDEX IF NOT EXISTS idx_tenders_user ON tenders(user_id)`);
     await db.execute(`CREATE INDEX IF NOT EXISTS idx_contracts_user ON contracts(user_id)`);
     await db.execute(`CREATE INDEX IF NOT EXISTS idx_tasks_user ON tasks(user_id)`);
+    await db.execute(`CREATE INDEX IF NOT EXISTS idx_tender_items_tender ON tender_items(tender_id)`);
+    await db.execute(`CREATE INDEX IF NOT EXISTS idx_tender_competitors_tender ON tender_competitors(tender_id)`);
+    await db.execute(`CREATE INDEX IF NOT EXISTS idx_tender_attachments_tender ON tender_attachments(tender_id)`);
+    await db.execute(`CREATE INDEX IF NOT EXISTS idx_invoices_tender ON invoices(tender_id)`);
 
     _initialized = true;
     console.log('Database schema initialized successfully');
