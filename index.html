@@ -3844,7 +3844,33 @@ ${escapeHtml(renderPackageStructure())}\
     // =============================
     // Boot
     // =============================
-    mountShell();
+    async function initApp() {
+      // Clear data cache on every load to ensure fresh data from server
+      const authData = localStorage.getItem(AUTH_KEY); // Keep auth
+
+      // Reset state to default (clear cached data)
+      state = defaultState();
+
+      // Restore auth
+      if (authData) {
+        try {
+          authState = JSON.parse(authData);
+        } catch { }
+      }
+
+      // Mount shell first
+      mountShell();
+
+      // If logged in, load fresh data from server
+      if (authState?.accessToken) {
+        console.log('Loading fresh data from server...');
+        await loadDataFromServerFormatted();
+        console.log('Data loaded, rendering...');
+        renderRoute();
+      }
+    }
+
+    initApp();
   </script>
 </body>
 
