@@ -34,14 +34,27 @@ module.exports = async (req, res) => {
 
         if (req.method === 'POST') {
             const body = await parseBody(req);
-            const { id, company_id, title, type, status, value, submission_date, notes } = body;
+            const {
+                id, company_id, title, type, status, value,
+                submission_date, notes, sample_date, proof_date,
+                delivery_duration, vat_status, gm_instructions, dm_instructions
+            } = body;
 
             if (!id || !title) return json(res, 400, { error: 'العنوان مطلوب' });
 
             await db.execute({
-                sql: `INSERT OR REPLACE INTO tenders (id, user_id, company_id, title, type, status, value, submission_date, notes, created_at) 
-                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                args: [id, userId, company_id || null, title, type || null, status || null, value || null, submission_date || null, notes || null, Date.now()]
+                sql: `INSERT OR REPLACE INTO tenders (
+                        id, user_id, company_id, title, type, status, value, 
+                        submission_date, notes, sample_date, proof_date,
+                        delivery_duration, vat_status, gm_instructions, dm_instructions, 
+                        created_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                args: [
+                    id, userId, company_id || null, title, type || null, status || null, value || null,
+                    submission_date || null, notes || null, sample_date || null, proof_date || null,
+                    delivery_duration || null, vat_status || 'exclusive', gm_instructions || null, dm_instructions || null,
+                    Date.now()
+                ]
             });
 
             return json(res, 201, { success: true, id });
@@ -49,13 +62,25 @@ module.exports = async (req, res) => {
 
         if (req.method === 'PUT') {
             const body = await parseBody(req);
-            const { id, company_id, title, type, status, value, submission_date, notes } = body;
+            const {
+                id, company_id, title, type, status, value,
+                submission_date, notes, sample_date, proof_date,
+                delivery_duration, vat_status, gm_instructions, dm_instructions
+            } = body;
             if (!id) return json(res, 400, { error: 'ID مطلوب' });
 
             await db.execute({
-                sql: `UPDATE tenders SET company_id = ?, title = ?, type = ?, status = ?, value = ?, submission_date = ?, notes = ? 
+                sql: `UPDATE tenders SET 
+                        company_id = ?, title = ?, type = ?, status = ?, value = ?, 
+                        submission_date = ?, notes = ?, sample_date = ?, proof_date = ?,
+                        delivery_duration = ?, vat_status = ?, gm_instructions = ?, dm_instructions = ?
                       WHERE id = ? AND user_id = ?`,
-                args: [company_id || null, title, type || null, status || null, value || null, submission_date || null, notes || null, id, userId]
+                args: [
+                    company_id || null, title, type || null, status || null, value || null,
+                    submission_date || null, notes || null, sample_date || null, proof_date || null,
+                    delivery_duration || null, vat_status || null, gm_instructions || null, dm_instructions || null,
+                    id, userId
+                ]
             });
 
             return json(res, 200, { success: true });
