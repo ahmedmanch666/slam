@@ -485,6 +485,34 @@
       st.meta.lastSavedAt = nowTs();
       localStorage.setItem(STORE_KEY, JSON.stringify(st));
       renderShellMeta();
+      // Debounced sync to server
+      scheduleSyncToServer();
+    }
+
+    let syncTimeout = null;
+    function scheduleSyncToServer() {
+      if (syncTimeout) clearTimeout(syncTimeout);
+      syncTimeout = setTimeout(() => syncAllToServer(), 2000);
+    }
+
+    async function syncAllToServer() {
+      if (!authState?.accessToken) return;
+
+      const types = ['companies', 'tenders', 'contracts', 'tasks', 'contacts', 'followups'];
+      for (const type of types) {
+        const items = state[type] || [];
+        for (const item of items) {
+          try {
+            await apiFetch(`/api/data/${type}`, {
+              method: 'POST',
+              body: JSON.stringify(convertToServerFormat(type, item))
+            });
+          } catch (err) {
+            console.error(`Sync error for ${type}:`, err);
+          }
+        }
+      }
+      console.log('Synced to server');
     }
 
     let state = loadState();
@@ -562,6 +590,237 @@
           body: JSON.stringify({ refreshToken: authState.refreshToken })
         });
       } catch { }
+    }
+
+    // =============================
+    // Server Sync Functions
+    // =============================
+    let syncInProgress = false;
+
+    async function loadDataFromServer() {
+      if (!authState?.accessToken) return;
+
+      try {
+        const endpoints = ['companies', 'tenders', 'contracts', 'tasks', 'contacts', 'followups'];
+        const results = await Promise.all(
+          endpoints.map(async (type) => {
+            const res = await apiFetch(`/api/data/${type}`);
+            if (res.ok) {
+              const data = await res.json();
+              return { type, data: data[type] || [] };
+            }
+            return { type, data: [] };
+          })
+        );
+
+        results.forEach(({ type, data }) => {
+          state[type] = data;
+        });
+
+        saveState(state);
+        console.log('Data loaded from server');
+      } catch (err) {
+        console.error('Failed to load data from server:', err);
+      }
+    }
+
+    async function saveItemToServer(type, item, method = 'POST') {
+      if (!authState?.accessToken) return false;
+
+      try {
+        const res = await apiFetch(`/api/data/${type}`, {
+          method,
+          body: JSON.stringify(item)
+        });
+        return res.ok;
+      } catch (err) {
+        console.error(`Failed to save ${type}:`, err);
+        return false;
+      }
+    }
+
+    async function deleteItemFromServer(type, id) {
+      if (!authState?.accessToken) return false;
+
+      try {
+        const res = await apiFetch(`/api/data/${type}`, {
+          method: 'DELETE',
+          body: JSON.stringify({ id })
+        });
+        return res.ok;
+      } catch (err) {
+        console.error(`Failed to delete ${type}:`, err);
+        return false;
+      }
+    }
+
+    // Enhanced save functions that sync with server
+    async function addItem(type, item) {
+      item.id = item.id || uuid();
+      item.createdAt = item.createdAt || nowTs();
+      state[type].push(item);
+      saveState(state);
+
+      // Sync to server in background
+      saveItemToServer(type, convertToServerFormat(type, item));
+      return item;
+    }
+
+    async function updateItem(type, id, updates) {
+      const idx = state[type].findIndex(x => x.id === id);
+      if (idx === -1) return null;
+
+      state[type][idx] = { ...state[type][idx], ...updates, updatedAt: nowTs() };
+      saveState(state);
+
+      // Sync to server in background
+      saveItemToServer(type, convertToServerFormat(type, state[type][idx]), 'PUT');
+      return state[type][idx];
+    }
+
+    async function removeItem(type, id) {
+      state[type] = state[type].filter(x => x.id !== id);
+      saveState(state);
+
+      // Sync to server in background
+      deleteItemFromServer(type, id);
+    }
+
+    function convertToServerFormat(type, item) {
+      // Convert camelCase to snake_case for server
+      const result = { id: item.id };
+
+      if (type === 'companies') {
+        result.name = item.name;
+        result.phone = item.phone;
+        result.email = item.email;
+        result.address = item.address;
+        result.notes = item.notes;
+      } else if (type === 'tenders') {
+        result.company_id = item.companyId;
+        result.title = item.title;
+        result.type = item.type;
+        result.status = item.status;
+        result.value = item.value;
+        result.submission_date = item.submissionDate;
+        result.notes = item.notes;
+      } else if (type === 'contracts') {
+        result.company_id = item.companyId;
+        result.tender_id = item.tenderId;
+        result.title = item.title;
+        result.status = item.status;
+        result.value = item.value;
+        result.start_date = item.startDate;
+        result.end_date = item.endDate;
+        result.notes = item.notes;
+      } else if (type === 'tasks') {
+        result.related_type = item.relatedType;
+        result.related_id = item.relatedId;
+        result.title = item.title;
+        result.priority = item.priority;
+        result.status = item.status;
+        result.due_date = item.dueDate;
+        result.notes = item.notes;
+      } else if (type === 'contacts') {
+        result.company_id = item.companyId;
+        result.name = item.name;
+        result.position = item.position;
+        result.phone = item.phone;
+        result.email = item.email;
+        result.notes = item.notes;
+      } else if (type === 'followups') {
+        result.related_type = item.relatedType;
+        result.related_id = item.relatedId;
+        result.type = item.type;
+        result.date = item.date;
+        result.notes = item.notes;
+      }
+
+      return result;
+    }
+
+    function convertFromServerFormat(type, item) {
+      // Convert snake_case to camelCase from server
+      const result = { id: item.id, createdAt: item.created_at };
+
+      if (type === 'companies') {
+        result.name = item.name;
+        result.phone = item.phone;
+        result.email = item.email;
+        result.address = item.address;
+        result.notes = item.notes;
+        result.updatedAt = item.updated_at;
+      } else if (type === 'tenders') {
+        result.companyId = item.company_id;
+        result.title = item.title;
+        result.type = item.type;
+        result.status = item.status;
+        result.value = item.value;
+        result.submissionDate = item.submission_date;
+        result.notes = item.notes;
+      } else if (type === 'contracts') {
+        result.companyId = item.company_id;
+        result.tenderId = item.tender_id;
+        result.title = item.title;
+        result.status = item.status;
+        result.value = item.value;
+        result.startDate = item.start_date;
+        result.endDate = item.end_date;
+        result.notes = item.notes;
+      } else if (type === 'tasks') {
+        result.relatedType = item.related_type;
+        result.relatedId = item.related_id;
+        result.title = item.title;
+        result.priority = item.priority;
+        result.status = item.status;
+        result.dueDate = item.due_date;
+        result.notes = item.notes;
+      } else if (type === 'contacts') {
+        result.companyId = item.company_id;
+        result.name = item.name;
+        result.position = item.position;
+        result.phone = item.phone;
+        result.email = item.email;
+        result.notes = item.notes;
+      } else if (type === 'followups') {
+        result.relatedType = item.related_type;
+        result.relatedId = item.related_id;
+        result.type = item.type;
+        result.date = item.date;
+        result.notes = item.notes;
+      }
+
+      return result;
+    }
+
+    async function loadDataFromServerFormatted() {
+      if (!authState?.accessToken) return;
+
+      try {
+        const endpoints = ['companies', 'tenders', 'contracts', 'tasks', 'contacts', 'followups'];
+        const results = await Promise.all(
+          endpoints.map(async (type) => {
+            const res = await apiFetch(`/api/data/${type}`);
+            if (res.ok) {
+              const data = await res.json();
+              const items = data[type] || [];
+              return { type, data: items.map(item => convertFromServerFormat(type, item)) };
+            }
+            return { type, data: [] };
+          })
+        );
+
+        results.forEach(({ type, data }) => {
+          if (data.length > 0) {
+            state[type] = data;
+          }
+        });
+
+        saveState(state);
+        console.log('Data loaded from server');
+      } catch (err) {
+        console.error('Failed to load data from server:', err);
+      }
     }
 
     function renderShellMeta() {
@@ -1248,6 +1507,10 @@
 
           authState = { accessToken: data.accessToken, refreshToken: data.refreshToken, role: data.role || null, email };
           saveAuth(authState);
+
+          // Load data from server after login
+          await loadDataFromServerFormatted();
+
           location.hash = '#/home';
           renderRoute();
         } finally {

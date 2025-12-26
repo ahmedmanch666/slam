@@ -56,9 +56,112 @@ async function initDb() {
         )
       `);
 
-        // Create index for faster lookups
+        // Create companies table
+        await db.execute(`
+        CREATE TABLE IF NOT EXISTS companies (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          name TEXT NOT NULL,
+          phone TEXT,
+          email TEXT,
+          address TEXT,
+          notes TEXT,
+          created_at INTEGER DEFAULT (unixepoch() * 1000),
+          updated_at INTEGER,
+          FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+      `);
+
+        // Create contacts table
+        await db.execute(`
+        CREATE TABLE IF NOT EXISTS contacts (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          company_id TEXT,
+          name TEXT NOT NULL,
+          position TEXT,
+          phone TEXT,
+          email TEXT,
+          notes TEXT,
+          created_at INTEGER DEFAULT (unixepoch() * 1000),
+          FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+      `);
+
+        // Create tenders table
+        await db.execute(`
+        CREATE TABLE IF NOT EXISTS tenders (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          company_id TEXT,
+          title TEXT NOT NULL,
+          type TEXT,
+          status TEXT,
+          value REAL,
+          submission_date INTEGER,
+          notes TEXT,
+          created_at INTEGER DEFAULT (unixepoch() * 1000),
+          FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+      `);
+
+        // Create contracts table
+        await db.execute(`
+        CREATE TABLE IF NOT EXISTS contracts (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          company_id TEXT,
+          tender_id TEXT,
+          title TEXT NOT NULL,
+          status TEXT,
+          value REAL,
+          start_date INTEGER,
+          end_date INTEGER,
+          notes TEXT,
+          created_at INTEGER DEFAULT (unixepoch() * 1000),
+          FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+      `);
+
+        // Create tasks table
+        await db.execute(`
+        CREATE TABLE IF NOT EXISTS tasks (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          related_type TEXT,
+          related_id TEXT,
+          title TEXT NOT NULL,
+          priority TEXT,
+          status TEXT,
+          due_date INTEGER,
+          notes TEXT,
+          created_at INTEGER DEFAULT (unixepoch() * 1000),
+          FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+      `);
+
+        // Create followups table
+        await db.execute(`
+        CREATE TABLE IF NOT EXISTS followups (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          related_type TEXT,
+          related_id TEXT,
+          type TEXT,
+          date INTEGER,
+          notes TEXT,
+          created_at INTEGER DEFAULT (unixepoch() * 1000),
+          FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+      `);
+
+        // Create indexes for faster lookups
         await db.execute(`CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token ON refresh_tokens(token)`);
         await db.execute(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
+        await db.execute(`CREATE INDEX IF NOT EXISTS idx_companies_user ON companies(user_id)`);
+        await db.execute(`CREATE INDEX IF NOT EXISTS idx_tenders_user ON tenders(user_id)`);
+        await db.execute(`CREATE INDEX IF NOT EXISTS idx_contracts_user ON contracts(user_id)`);
+        await db.execute(`CREATE INDEX IF NOT EXISTS idx_tasks_user ON tasks(user_id)`);
 
         _initialized = true;
         console.log('Database schema initialized successfully');
