@@ -1,39 +1,314 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>مدير المناقصات والعقود والمبيعات (أوفلاين)</title>
+  <title>مدير المناقصات والعقود والمبيعات</title>
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%236366f1' rx='20' width='100' height='100'/%3E%3Ctext x='50' y='65' text-anchor='middle' fill='white' font-size='50' font-weight='bold'%3Eم%3C/text%3E%3C/svg%3E" />
   <script src="./config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <style>
-    :root { color-scheme: light; }
-    html, body { height: 100%; }
-    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Arabic", "Noto Naskh Arabic", Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
-    .shadow-soft { box-shadow: 0 10px 30px rgba(0,0,0,.08); }
-    .grid-autofit { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-    input[type="date"], input[type="datetime-local"], select { color-scheme: light; }
-    textarea { resize: vertical; }
+    :root {
+      color-scheme: light;
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --primary-light: #818cf8;
+      --secondary: #8b5cf6;
+      --accent: #06b6d4;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --bg-gradient-soft: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+      --glass-bg: rgba(255, 255, 255, 0.85);
+      --glass-border: rgba(255, 255, 255, 0.3);
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Arabic", "Noto Naskh Arabic", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: var(--bg-gradient-soft);
+    }
+
+    /* Premium Shadows */
+    .shadow-soft {
+      box-shadow: 0 10px 40px -10px rgba(99, 102, 241, 0.15), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .shadow-glow {
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+    }
+
+    .shadow-card {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
+    }
+
+    /* Glassmorphism */
+    .glass {
+      background: var(--glass-bg);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+    }
+
+    .glass-dark {
+      background: rgba(15, 23, 42, 0.85);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+    }
+
+    /* Gradient Text */
+    .gradient-text {
+      background: var(--bg-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Gradient Buttons */
+    .btn-gradient {
+      background: var(--bg-gradient);
+      color: white;
+      border: none;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .btn-gradient:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-gradient::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn-gradient:hover::before {
+      left: 100%;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes pulse-soft {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.7;
+      }
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    .animate-fadeInUp {
+      animation: fadeInUp 0.5s ease-out forwards;
+    }
+
+    .animate-slideInRight {
+      animation: slideInRight 0.4s ease-out forwards;
+    }
+
+    .animate-pulse-soft {
+      animation: pulse-soft 2s ease-in-out infinite;
+    }
+
+    .animate-float {
+      animation: float 3s ease-in-out infinite;
+    }
+
+    /* Hover Effects */
+    .hover-lift {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .hover-lift:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(99, 102, 241, 0.15);
+    }
+
+    /* Card Styles */
+    .card-modern {
+      background: white;
+      border-radius: 20px;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+    }
+
+    .card-modern:hover {
+      border-color: rgba(99, 102, 241, 0.2);
+    }
+
+    /* Input Styles */
+    .input-modern {
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      transition: all 0.3s ease;
+      background: white;
+    }
+
+    .input-modern:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+      outline: none;
+    }
+
+    /* Badge Styles */
+    .badge-gradient {
+      background: var(--bg-gradient);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Table Styles */
+    .table-modern {
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .table-modern th {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      font-weight: 700;
+      color: #475569;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+    }
+
+    .table-modern tr:hover td {
+      background: #f8fafc;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #4f46e5;
+    }
+
+    /* Other utilities */
+    .grid-autofit {
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    .kbd {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    input[type="date"],
+    input[type="datetime-local"],
+    select {
+      color-scheme: light;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    /* Loading Spinner */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
   </style>
 </head>
+
 <body class="bg-slate-50 text-slate-900">
   <div id="app" class="min-h-screen"></div>
 
   <template id="tpl-shell">
     <div class="min-h-screen flex flex-row-reverse" data-shell>
-      <aside id="sidebar" class="hidden md:flex w-80 max-w-[85vw] bg-white border-l border-slate-200 p-4 flex-col gap-4 nav-aside">
+      <aside id="sidebar"
+        class="hidden md:flex w-80 max-w-[85vw] bg-white border-l border-slate-200 p-4 flex-col gap-4 nav-aside">
         <div class="flex items-start justify-between">
           <div>
             <h1 class="text-lg font-bold">مدير المناقصات والعقود</h1>
             <p class="text-xs text-slate-500 mt-1">نسخة أوفلاين (نموذج + مولّد مشروع Android)</p>
           </div>
-          <span class="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">محلي</span>
+          <span
+            class="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">محلي</span>
         </div>
 
         <div class="relative">
-          <input id="navSearch" type="search" placeholder="بحث في القائمة..." class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-slate-300" />
+          <input id="navSearch" type="search" placeholder="بحث في القائمة..."
+            class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-slate-300" />
         </div>
 
         <div id="navSidebar" class="flex flex-col gap-2 overflow-auto nav-scroll"></div>
@@ -48,7 +323,8 @@
             <span id="lastSaved" class="font-semibold">—</span>
           </div>
           <div class="mt-2 p-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800">
-            هذا نموذج ويب لتجربة الفكرة. زر <b>مشروع Android</b> يقوم بتوليد هيكل مشروع Kotlin/Compose/Room قابل للتشغيل.
+            هذا نموذج ويب لتجربة الفكرة. زر <b>مشروع Android</b> يقوم بتوليد هيكل مشروع Kotlin/Compose/Room قابل
+            للتشغيل.
           </div>
         </div>
       </aside>
@@ -82,7 +358,9 @@
     <div class="fixed inset-0 z-[9999]" data-app-modal>
       <div class="absolute inset-0 bg-slate-900/40" data-close></div>
       <div class="absolute inset-0 flex items-end md:items-center justify-center p-0 md:p-6">
-        <div class="w-full md:w-[560px] md:max-w-[92vw] bg-white shadow-soft border border-slate-200 rounded-t-2xl md:rounded-2xl flex flex-col" data-app-modal-card>
+        <div
+          class="w-full md:w-[560px] md:max-w-[92vw] bg-white shadow-soft border border-slate-200 rounded-t-2xl md:rounded-2xl flex flex-col"
+          data-app-modal-card>
           <div class="p-4 border-b border-slate-200 flex items-start justify-between gap-3 min-w-0">
             <div class="min-w-0">
               <h3 class="text-base font-bold" data-title></h3>
@@ -91,7 +369,8 @@
             <button class="px-3 py-2 rounded-lg border border-slate-200 hover:bg-slate-50" data-close>إغلاق</button>
           </div>
           <div class="p-4 overflow-auto" data-body></div>
-          <div class="p-4 border-t border-slate-200 flex items-center justify-between gap-2 min-w-0" data-app-modal-footer>
+          <div class="p-4 border-t border-slate-200 flex items-center justify-between gap-2 min-w-0"
+            data-app-modal-footer>
             <div class="text-xs text-slate-500" data-hint></div>
             <div class="flex items-center gap-2">
               <button class="px-3 py-2 rounded-lg border border-slate-200 hover:bg-slate-50" data-cancel>إلغاء</button>
@@ -115,8 +394,8 @@
     // =============================
     // Utilities
     // =============================
-    const $ = (sel, el=document) => el.querySelector(sel);
-    const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
+    const $ = (sel, el = document) => el.querySelector(sel);
+    const $$ = (sel, el = document) => Array.from(el.querySelectorAll(sel));
 
     const nowTs = () => Date.now();
     const uuid = () => (crypto?.randomUUID ? crypto.randomUUID() : ("id_" + Math.random().toString(16).slice(2) + "_" + Date.now()));
@@ -125,18 +404,18 @@
     const toISODate = (ts) => {
       if (!ts) return '';
       const d = new Date(ts);
-      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+      return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
     };
     const fromISODate = (s) => {
       if (!s) return null;
-      const [y,m,d] = s.split('-').map(Number);
+      const [y, m, d] = s.split('-').map(Number);
       if (!y || !m || !d) return null;
-      return new Date(y, m-1, d, 0, 0, 0, 0).getTime();
+      return new Date(y, m - 1, d, 0, 0, 0, 0).getTime();
     };
     const toISODatetimeLocal = (ts) => {
       if (!ts) return '';
       const d = new Date(ts);
-      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+      return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
     };
     const fromISODatetimeLocal = (s) => {
       if (!s) return null;
@@ -150,13 +429,13 @@
 
     const startOfDay = (ts) => {
       const d = new Date(ts);
-      d.setHours(0,0,0,0);
+      d.setHours(0, 0, 0, 0);
       return d.getTime();
     };
 
-    const daysFromNow = (n) => startOfDay(Date.now() + n*24*60*60*1000);
+    const daysFromNow = (n) => startOfDay(Date.now() + n * 24 * 60 * 60 * 1000);
 
-    const escapeHtml = (s) => (s ?? '').toString().replace(/[&<>"]+/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]||c));
+    const escapeHtml = (s) => (s ?? '').toString().replace(/[&<>"']+/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] || c));
 
     // =============================
     // Local store (LocalStorage JSON)
@@ -195,7 +474,7 @@
         const raw = localStorage.getItem(STORE_KEY);
         if (!raw) return defaultState();
         const st = JSON.parse(raw);
-        return { ...defaultState(), ...st, settings: { ...defaultState().settings, ...(st.settings||{}) } };
+        return { ...defaultState(), ...st, settings: { ...defaultState().settings, ...(st.settings || {}) } };
       } catch {
         return defaultState();
       }
@@ -226,7 +505,7 @@
     }
 
     function clearAuth() {
-      try { localStorage.removeItem(AUTH_KEY); } catch {}
+      try { localStorage.removeItem(AUTH_KEY); } catch { }
     }
 
     let authState = loadAuth();
@@ -282,14 +561,14 @@
           credentials: 'include',
           body: JSON.stringify({ refreshToken: authState.refreshToken })
         });
-      } catch {}
+      } catch { }
     }
 
     function renderShellMeta() {
       const size = new Blob([localStorage.getItem(STORE_KEY) || '']).size;
       const storageState = $('#storageState');
       const lastSaved = $('#lastSaved');
-      if (storageState) storageState.textContent = `${(size/1024).toFixed(1)} KB`;
+      if (storageState) storageState.textContent = `${(size / 1024).toFixed(1)} KB`;
       if (lastSaved) lastSaved.textContent = state?.meta?.lastSavedAt ? fmtDateTime(state.meta.lastSavedAt) : '—';
     }
 
@@ -297,31 +576,31 @@
     // Domain helpers
     // =============================
     const Enums = {
-      TenderType: ['TENDER','PRACTICE','CONTRACT','DIRECT_SALE'],
-      TenderStatus: ['PREPARATION','OFFER_IN_PROGRESS','SUBMITTED','AWARDED','LOST','IN_PROGRESS','COMPLETED'],
-      ContractStatus: ['ACTIVE','EXPIRED','SUSPENDED'],
-      TaskPriority: ['HIGH','MEDIUM','LOW'],
-      TaskStatus: ['NEW','IN_PROGRESS','DONE','OVERDUE'],
-      RelatedType: ['COMPANY','TENDER','CONTRACT'],
-      FollowUpType: ['CALL','VISIT','EMAIL','WHATSAPP','OTHER']
+      TenderType: ['TENDER', 'PRACTICE', 'CONTRACT', 'DIRECT_SALE'],
+      TenderStatus: ['PREPARATION', 'OFFER_IN_PROGRESS', 'SUBMITTED', 'AWARDED', 'LOST', 'IN_PROGRESS', 'COMPLETED'],
+      ContractStatus: ['ACTIVE', 'EXPIRED', 'SUSPENDED'],
+      TaskPriority: ['HIGH', 'MEDIUM', 'LOW'],
+      TaskStatus: ['NEW', 'IN_PROGRESS', 'DONE', 'OVERDUE'],
+      RelatedType: ['COMPANY', 'TENDER', 'CONTRACT'],
+      FollowUpType: ['CALL', 'VISIT', 'EMAIL', 'WHATSAPP', 'OTHER']
     };
 
     const labels = {
-      TenderType: { TENDER:'مناقصة', PRACTICE:'ممارسة', CONTRACT:'تعاقد', DIRECT_SALE:'بيع مباشر' },
+      TenderType: { TENDER: 'مناقصة', PRACTICE: 'ممارسة', CONTRACT: 'تعاقد', DIRECT_SALE: 'بيع مباشر' },
       TenderStatus: {
-        PREPARATION:'تحضير',
-        OFFER_IN_PROGRESS:'إعداد العرض',
-        SUBMITTED:'تم التقديم',
-        AWARDED:'ترسية',
-        LOST:'خسارة',
-        IN_PROGRESS:'قيد التنفيذ',
-        COMPLETED:'مكتمل'
+        PREPARATION: 'تحضير',
+        OFFER_IN_PROGRESS: 'إعداد العرض',
+        SUBMITTED: 'تم التقديم',
+        AWARDED: 'ترسية',
+        LOST: 'خسارة',
+        IN_PROGRESS: 'قيد التنفيذ',
+        COMPLETED: 'مكتمل'
       },
-      ContractStatus: { ACTIVE:'ساري', EXPIRED:'منتهي', SUSPENDED:'موقوف' },
-      TaskPriority: { HIGH:'عالية', MEDIUM:'متوسطة', LOW:'منخفضة' },
-      TaskStatus: { NEW:'جديدة', IN_PROGRESS:'قيد التنفيذ', DONE:'منتهية', OVERDUE:'متأخرة' },
-      RelatedType: { COMPANY:'شركة', TENDER:'مناقصة', CONTRACT:'عقد' },
-      FollowUpType: { CALL:'اتصال', VISIT:'زيارة', EMAIL:'بريد', WHATSAPP:'واتساب', OTHER:'أخرى' }
+      ContractStatus: { ACTIVE: 'ساري', EXPIRED: 'منتهي', SUSPENDED: 'موقوف' },
+      TaskPriority: { HIGH: 'عالية', MEDIUM: 'متوسطة', LOW: 'منخفضة' },
+      TaskStatus: { NEW: 'جديدة', IN_PROGRESS: 'قيد التنفيذ', DONE: 'منتهية', OVERDUE: 'متأخرة' },
+      RelatedType: { COMPANY: 'شركة', TENDER: 'مناقصة', CONTRACT: 'عقد' },
+      FollowUpType: { CALL: 'اتصال', VISIT: 'زيارة', EMAIL: 'بريد', WHATSAPP: 'واتساب', OTHER: 'أخرى' }
     };
 
     function getCompanyName(companyId) {
@@ -355,7 +634,7 @@
     // =============================
     // UI components helpers
     // =============================
-    function setPage(title, subtitle, actions=[]) {
+    function setPage(title, subtitle, actions = []) {
       $('#pageTitle').textContent = title;
       $('#pageSubtitle').textContent = subtitle || '';
       const wrap = $('#pageActions');
@@ -363,7 +642,7 @@
       actions.forEach(a => wrap.appendChild(a));
     }
 
-    function mkBtn(label, variant='primary', onClick) {
+    function mkBtn(label, variant = 'primary', onClick) {
       const btn = document.createElement('button');
       btn.type = 'button';
       const base = 'px-3 py-2 rounded-lg text-sm border transition';
@@ -373,22 +652,22 @@
         danger: 'bg-rose-600 text-white border-rose-600 hover:bg-rose-700',
         ghost: 'bg-transparent text-slate-700 border-transparent hover:bg-slate-100'
       };
-      btn.className = `${base} ${styles[variant]||styles.primary}`;
+      btn.className = `${base} ${styles[variant] || styles.primary}`;
       btn.textContent = label;
       btn.addEventListener('click', onClick);
       return btn;
     }
 
-    function mkBadge(text, color='slate') {
+    function mkBadge(text, color = 'slate') {
       const span = document.createElement('span');
       const map = {
-        slate:'bg-slate-100 text-slate-700 border-slate-200',
-        emerald:'bg-emerald-50 text-emerald-700 border-emerald-200',
-        amber:'bg-amber-50 text-amber-800 border-amber-200',
-        rose:'bg-rose-50 text-rose-700 border-rose-200',
-        blue:'bg-blue-50 text-blue-700 border-blue-200'
+        slate: 'bg-slate-100 text-slate-700 border-slate-200',
+        emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        amber: 'bg-amber-50 text-amber-800 border-amber-200',
+        rose: 'bg-rose-50 text-rose-700 border-rose-200',
+        blue: 'bg-blue-50 text-blue-700 border-blue-200'
       };
-      span.className = `text-xs px-2 py-1 rounded-full border ${map[color]||map.slate}`;
+      span.className = `text-xs px-2 py-1 rounded-full border ${map[color] || map.slate}`;
       span.textContent = text;
       return span;
     }
@@ -399,7 +678,7 @@
       const h = document.createElement('div');
       h.className = 'flex items-start justify-between gap-3';
       const left = document.createElement('div');
-      left.innerHTML = `<div class="text-sm font-bold">${escapeHtml(title)}</div><div class="text-xs text-slate-500 mt-1">${escapeHtml(subtitle||'')}</div>`;
+      left.innerHTML = `<div class="text-sm font-bold">${escapeHtml(title)}</div><div class="text-xs text-slate-500 mt-1">${escapeHtml(subtitle || '')}</div>`;
       h.appendChild(left);
       card.appendChild(h);
       if (bodyEl) {
@@ -446,7 +725,7 @@
       return tr;
     }
 
-    function mkField({label, type='text', value='', placeholder='', options=null, rows=3, help=''}) {
+    function mkField({ label, type = 'text', value = '', placeholder = '', options = null, rows = 3, help = '' }) {
       const wrap = document.createElement('div');
       wrap.className = 'flex flex-col gap-1';
       const l = document.createElement('label');
@@ -458,7 +737,7 @@
       if (type === 'select') {
         input = document.createElement('select');
         input.className = 'w-full px-3 py-2 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-slate-300';
-        (options||[]).forEach(opt => {
+        (options || []).forEach(opt => {
           const o = document.createElement('option');
           o.value = opt.value;
           o.textContent = opt.label;
@@ -487,7 +766,7 @@
         h.textContent = help;
         wrap.appendChild(h);
       }
-      return {wrap, input};
+      return { wrap, input };
     }
 
     function mkTwoCols(...nodes) {
@@ -497,7 +776,7 @@
       return grid;
     }
 
-    function openModal({title, subtitle='', hint='', okText='حفظ', cancelText='إلغاء', body, onOk}) {
+    function openModal({ title, subtitle = '', hint = '', okText = 'حفظ', cancelText = 'إلغاء', body, onOk }) {
       document.body.classList.remove('drawer-open');
       const tpl = $('#tpl-modal');
       const node = tpl.content.cloneNode(true);
@@ -543,7 +822,7 @@
       return root;
     }
 
-    function confirmDialog({title='تأكيد', message='هل أنت متأكد؟', confirmText='حذف', danger=true}) {
+    function confirmDialog({ title = 'تأكيد', message = 'هل أنت متأكد؟', confirmText = 'حذف', danger = true }) {
       return new Promise((resolve) => {
         const body = document.createElement('div');
         body.className = 'text-sm text-slate-700 leading-7';
@@ -569,7 +848,7 @@
       });
     }
 
-    function mkEmpty(msg, actions=[]) {
+    function mkEmpty(msg, actions = []) {
       const tpl = $('#tpl-empty');
       const node = tpl.content.cloneNode(true);
       const root = node.firstElementChild;
@@ -655,7 +934,7 @@
       document.addEventListener('keydown', (e) => {
         if (!e.altKey) return;
         const map = {
-          '1':'#/home','2':'#/companies','3':'#/tenders','4':'#/contracts','5':'#/tasks','6':'#/followups','7':'#/android'
+          '1': '#/home', '2': '#/companies', '3': '#/tenders', '4': '#/contracts', '5': '#/tasks', '6': '#/followups', '7': '#/android'
         };
         if (map[e.key]) {
           e.preventDefault();
@@ -675,19 +954,19 @@
 
     function renderNav(activeRoute, userRole, counts) {
       const items = [
-        { key:'home', label:'لوحة التحكم', href:'#/home', group:'main' },
-        { key:'companies', label:'الشركات', href:'#/companies', group:'main', badge: Number(counts?.companies||0), badgeColor:'slate' },
-        { key:'tenders', label:'المناقصات', href:'#/tenders', group:'more' },
-        { key:'contracts', label:'العقود', href:'#/contracts', group:'more' },
-        { key:'tasks', label:'المهام', href:'#/tasks', group:'main', badge: Number(counts?.overdueTasks||0), badgeColor:'rose' },
-        { key:'followups', label:'المتابعات', href:'#/followups', group:'more' },
-        { key:'backup', label:'نسخ/استعادة', href:'#/backup', group:'more' },
-        { key:'settings', label:'الإعدادات', href:'#/settings', group:'more' },
-        ...(userRole === 'admin' ? [{ key:'android', label:'مولّد Android', href:'#/android', group:'more' }] : [])
+        { key: 'home', label: 'لوحة التحكم', href: '#/home', group: 'main' },
+        { key: 'companies', label: 'الشركات', href: '#/companies', group: 'main', badge: Number(counts?.companies || 0), badgeColor: 'slate' },
+        { key: 'tenders', label: 'المناقصات', href: '#/tenders', group: 'more' },
+        { key: 'contracts', label: 'العقود', href: '#/contracts', group: 'more' },
+        { key: 'tasks', label: 'المهام', href: '#/tasks', group: 'main', badge: Number(counts?.overdueTasks || 0), badgeColor: 'rose' },
+        { key: 'followups', label: 'المتابعات', href: '#/followups', group: 'more' },
+        { key: 'backup', label: 'نسخ/استعادة', href: '#/backup', group: 'more' },
+        { key: 'settings', label: 'الإعدادات', href: '#/settings', group: 'more' },
+        ...(userRole === 'admin' ? [{ key: 'android', label: 'مولّد Android', href: '#/android', group: 'more' }] : [])
       ];
 
       const isActive = (href) => (activeRoute || '#/home') === href;
-      const badgeHtml = (n, variant='slate') => {
+      const badgeHtml = (n, variant = 'slate') => {
         if (!Number.isFinite(n) || n <= 0) return '';
         const extra = variant === 'rose' ? 'style="border-color: rgb(254 202 202); background: rgb(254 242 242); color: rgb(159 18 57);"' : '';
         return `<span class="nav-badge" ${extra}>${escapeHtml(n)}</span>`;
@@ -698,7 +977,7 @@
         return `
           <button class="nav-link ${active ? 'active' : ''}" data-nav="${it.href}" data-nav-item data-nav-title="${escapeHtml(it.label)}" aria-current="${active ? 'page' : 'false'}">
             <span class="font-semibold">${escapeHtml(it.label)}</span>
-            ${badgeHtml(it.badge||0, it.badgeColor)}
+            ${badgeHtml(it.badge || 0, it.badgeColor)}
           </button>
         `;
       };
@@ -784,7 +1063,7 @@
 
       const hashFull = location.hash || '#/home';
       const activeHash = hashFull.split('?')[0] || '#/home';
-      const [pathOnly] = hashFull.replace('#','').split('?');
+      const [pathOnly] = hashFull.replace('#', '').split('?');
 
       const isAuthRoute = pathOnly === '/login' || pathOnly === '/register';
       const isAuthed = !!authState?.accessToken;
@@ -803,7 +1082,7 @@
         if (mobile) mobile.innerHTML = '';
       }
 
-      const [path, qStr] = hashFull.replace('#','').split('?');
+      const [path, qStr] = hashFull.replace('#', '').split('?');
       const q = new URLSearchParams(qStr || '');
 
       const content = $('#content');
@@ -840,47 +1119,123 @@
     }
 
     function renderLogin(root, q) {
-      setPage('تسجيل الدخول', 'أدخل البريد وكلمة المرور للوصول إلى التطبيق.');
+      // Hide sidebar and footer for login page
+      const sidebar = $('#sidebar');
+      const navMobile = $('#navMobile');
+      if (sidebar) sidebar.style.display = 'none';
+      if (navMobile) navMobile.style.display = 'none';
 
-      const box = document.createElement('div');
-      box.className = 'bg-white border border-slate-200 rounded-2xl p-4 shadow-soft max-w-xl mx-auto';
+      setPage('', '');
 
-      const form = document.createElement('form');
+      // Create full-page login container
+      root.innerHTML = `
+        <div class="min-h-[80vh] flex items-center justify-center animate-fadeInUp">
+          <div class="w-full max-w-md">
+            <!-- Logo & Header -->
+            <div class="text-center mb-8">
+              <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-glow animate-float">
+                <span class="text-3xl font-bold text-white">م</span>
+              </div>
+              <h1 class="text-2xl font-bold gradient-text">مدير المناقصات والعقود</h1>
+              <p class="text-slate-500 mt-2">نظام إدارة متكامل للمناقصات والعقود والمبيعات</p>
+            </div>
+            
+            <!-- Login Card -->
+            <div class="card-modern p-8 shadow-soft hover-lift">
+              <form id="loginForm" class="space-y-5">
+                <div>
+                  <label class="block text-sm font-semibold text-slate-700 mb-2">البريد الإلكتروني</label>
+                  <input 
+                    id="loginEmail" 
+                    type="email" 
+                    value="${escapeHtml(q.get('email') || authState?.email || '')}"
+                    placeholder="name@example.com" 
+                    class="input-modern w-full"
+                    autocomplete="email"
+                  />
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-semibold text-slate-700 mb-2">كلمة المرور</label>
+                  <input 
+                    id="loginPassword" 
+                    type="password" 
+                    placeholder="••••••••" 
+                    class="input-modern w-full"
+                    autocomplete="current-password"
+                  />
+                </div>
+                
+                <button 
+                  type="submit" 
+                  id="loginBtn"
+                  class="w-full py-3 px-4 rounded-xl btn-gradient font-bold text-lg flex items-center justify-center gap-2"
+                >
+                  <span>تسجيل الدخول</span>
+                  <svg class="w-5 h-5 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                  </svg>
+                </button>
+                
+                <div class="relative my-6">
+                  <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-slate-200"></div>
+                  </div>
+                  <div class="relative flex justify-center text-sm">
+                    <span class="px-4 bg-white text-slate-500">أو</span>
+                  </div>
+                </div>
+                
+                <button 
+                  type="button" 
+                  id="registerBtn"
+                  class="w-full py-3 px-4 rounded-xl border-2 border-indigo-100 bg-indigo-50/50 text-indigo-600 font-semibold hover:bg-indigo-100 transition-all"
+                >
+                  إنشاء حساب جديد
+                </button>
+              </form>
+              
+              <div class="mt-6 p-4 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200">
+                <div class="flex items-start gap-3">
+                  <span class="text-xl">💡</span>
+                  <div>
+                    <div class="text-sm font-semibold text-amber-800">ملاحظة</div>
+                    <div class="text-xs text-amber-700 mt-1 leading-relaxed">أول حساب يتم إنشاؤه يصبح مدير (admin) تلقائياً.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="text-center mt-6 text-xs text-slate-400">
+              <span>نسخة 2.0</span>
+              <span class="mx-2">•</span>
+              <span>تخزين سحابي آمن</span>
+            </div>
+          </div>
+        </div>
+      `;
 
-      const fEmail = mkField({ label: 'البريد الإلكتروني', type: 'email', value: q.get('email') || authState?.email || '', placeholder: 'name@example.com' });
-      const fPass = mkField({ label: 'كلمة المرور', type: 'password', value: '', placeholder: '********' });
+      // Attach event listeners
+      const form = $('#loginForm', root);
+      const btnLogin = $('#loginBtn', root);
+      const btnRegister = $('#registerBtn', root);
 
-      fEmail.input.id = 'loginEmail';
-      fPass.input.id = 'loginPassword';
-
-      form.appendChild(fEmail.wrap);
-      form.appendChild(fPass.wrap);
-
-      const row = document.createElement('div');
-      row.className = 'mt-4 flex flex-col sm:flex-row gap-2 min-w-0';
-
-      const btnLogin = mkBtn('دخول', 'primary', () => {});
-      btnLogin.type = 'submit';
-
-      const btnRegister = mkBtn('إنشاء حساب', 'secondary', () => {
-        const email = (document.getElementById('loginEmail')?.value || '').trim();
+      btnRegister.addEventListener('click', () => {
+        const email = ($('#loginEmail', root)?.value || '').trim();
         location.hash = email ? `#/register?email=${encodeURIComponent(email)}` : '#/register';
       });
-      btnRegister.type = 'button';
-
-      row.appendChild(btnLogin);
-      row.appendChild(btnRegister);
-      form.appendChild(row);
 
       form.onsubmit = async (e) => {
         e.preventDefault();
-        const email = document.getElementById('loginEmail').value.trim();
-        const password = document.getElementById('loginPassword').value;
-        console.log('login values', { email, passwordLen: password.length });
+        const email = $('#loginEmail', root).value.trim();
+        const password = $('#loginPassword', root).value;
+
         if (!email || !password) return alert('أدخل البريد وكلمة المرور.');
 
         btnLogin.disabled = true;
-        btnLogin.classList.add('opacity-60');
+        btnLogin.innerHTML = '<div class="spinner mx-auto"></div>';
+
         try {
           const res = await fetch(`${API_BASE}/api/auth/login`, {
             method: 'POST',
@@ -890,51 +1245,138 @@
           });
           const data = await res.json().catch(() => ({}));
           if (!res.ok) return alert(data?.error || 'فشل تسجيل الدخول');
+
           authState = { accessToken: data.accessToken, refreshToken: data.refreshToken, role: data.role || null, email };
           saveAuth(authState);
           location.hash = '#/home';
           renderRoute();
         } finally {
           btnLogin.disabled = false;
-          btnLogin.classList.remove('opacity-60');
-        }
+          btnLogin.innerHTML = `
+            <span>تسجيل الدخول</span>
+            <svg class="w-5 h-5 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+            </svg>
+          `;
+        };
       };
-
-      box.appendChild(form);
-
-      const hint = document.createElement('div');
-      hint.className = 'text-xs text-slate-500 mt-4 leading-6';
-      hint.textContent = 'ملاحظة: أول حساب يتم إنشاؤه يصبح مدير (admin) تلقائياً.';
-      box.appendChild(hint);
-
-      root.appendChild(box);
     }
 
     function renderRegister(root, q) {
-      setPage('إنشاء حساب', 'سجّل بريدك وكلمة مرور (8 أحرف على الأقل).');
+      // Hide sidebar and footer for register page
+      const sidebar = $('#sidebar');
+      const navMobile = $('#navMobile');
+      if (sidebar) sidebar.style.display = 'none';
+      if (navMobile) navMobile.style.display = 'none';
 
-      const box = document.createElement('div');
-      box.className = 'bg-white border border-slate-200 rounded-2xl p-4 shadow-soft max-w-xl mx-auto';
+      setPage('', '');
 
-      const fEmail = mkField({ label: 'البريد الإلكتروني', type: 'email', value: q.get('email') || '', placeholder: 'name@example.com' });
-      const fPass = mkField({ label: 'كلمة المرور', type: 'password', value: '', placeholder: '********' });
-      const fPass2 = mkField({ label: 'تأكيد كلمة المرور', type: 'password', value: '', placeholder: '********' });
-      box.appendChild(fEmail.wrap);
-      box.appendChild(fPass.wrap);
-      box.appendChild(fPass2.wrap);
+      root.innerHTML = `
+        <div class="min-h-[80vh] flex items-center justify-center animate-fadeInUp">
+          <div class="w-full max-w-md">
+            <!-- Logo & Header -->
+            <div class="text-center mb-8">
+              <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-glow animate-float">
+                <span class="text-3xl font-bold text-white">+</span>
+              </div>
+              <h1 class="text-2xl font-bold gradient-text">إنشاء حساب جديد</h1>
+              <p class="text-slate-500 mt-2">سجّل بريدك وكلمة مرور (8 أحرف على الأقل)</p>
+            </div>
+            
+            <!-- Register Card -->
+            <div class="card-modern p-8 shadow-soft hover-lift">
+              <form id="registerForm" class="space-y-4">
+                <div>
+                  <label class="block text-sm font-semibold text-slate-700 mb-2">البريد الإلكتروني</label>
+                  <input 
+                    id="regEmail" 
+                    type="email" 
+                    value="${escapeHtml(q.get('email') || '')}"
+                    placeholder="name@example.com" 
+                    class="input-modern w-full"
+                    autocomplete="email"
+                  />
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-semibold text-slate-700 mb-2">كلمة المرور</label>
+                  <input 
+                    id="regPassword" 
+                    type="password" 
+                    placeholder="••••••••" 
+                    class="input-modern w-full"
+                    autocomplete="new-password"
+                  />
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-semibold text-slate-700 mb-2">تأكيد كلمة المرور</label>
+                  <input 
+                    id="regPassword2" 
+                    type="password" 
+                    placeholder="••••••••" 
+                    class="input-modern w-full"
+                    autocomplete="new-password"
+                  />
+                </div>
+                
+                <button 
+                  type="submit" 
+                  id="registerBtn"
+                  class="w-full py-3 px-4 rounded-xl btn-gradient font-bold text-lg flex items-center justify-center gap-2 mt-6"
+                >
+                  <span>إنشاء الحساب</span>
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                  </svg>
+                </button>
+                
+                <button 
+                  type="button" 
+                  id="backBtn"
+                  class="w-full py-3 px-4 rounded-xl border-2 border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                  </svg>
+                  <span>العودة لتسجيل الدخول</span>
+                </button>
+              </form>
+            </div>
+            
+            <!-- Footer -->
+            <div class="text-center mt-6 text-xs text-slate-400">
+              <span>نسخة 2.0</span>
+              <span class="mx-2">•</span>
+              <span>حسابك آمن ومشفر</span>
+            </div>
+          </div>
+        </div>
+      `;
 
-      const row = document.createElement('div');
-      row.className = 'mt-4 flex flex-col sm:flex-row gap-2 min-w-0';
+      // Attach event listeners
+      const form = $('#registerForm', root);
+      const btnRegister = $('#registerBtn', root);
+      const btnBack = $('#backBtn', root);
 
-      const btnCreate = mkBtn('إنشاء', 'primary', async () => {
-        const email = fEmail.input.value.trim();
-        const password = fPass.input.value;
-        const password2 = fPass2.input.value;
+      btnBack.addEventListener('click', () => {
+        const email = ($('#regEmail', root)?.value || '').trim();
+        location.hash = email ? `#/login?email=${encodeURIComponent(email)}` : '#/login';
+      });
+
+      form.onsubmit = async (e) => {
+        e.preventDefault();
+        const email = $('#regEmail', root).value.trim();
+        const password = $('#regPassword', root).value;
+        const password2 = $('#regPassword2', root).value;
+
         if (!email || !password) return alert('أدخل البريد وكلمة المرور.');
         if (password.length < 8) return alert('كلمة المرور يجب أن تكون 8 أحرف على الأقل.');
         if (password !== password2) return alert('كلمتا المرور غير متطابقتين.');
-        btnCreate.disabled = true;
-        btnCreate.classList.add('opacity-60');
+
+        btnRegister.disabled = true;
+        btnRegister.innerHTML = '<div class="spinner mx-auto"></div>';
+
         try {
           const res = await fetch(`${API_BASE}/api/auth/register`, {
             method: 'POST',
@@ -946,21 +1388,15 @@
           if (!res.ok) return alert(data?.error || 'فشل إنشاء الحساب');
           location.hash = `#/login?email=${encodeURIComponent(email)}`;
         } finally {
-          btnCreate.disabled = false;
-          btnCreate.classList.remove('opacity-60');
+          btnRegister.disabled = false;
+          btnRegister.innerHTML = `
+            <span>إنشاء الحساب</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+            </svg>
+          `;
         }
-      });
-
-      const btnBack = mkBtn('رجوع لتسجيل الدخول', 'secondary', () => {
-        const email = fEmail.input.value.trim();
-        location.hash = email ? `#/login?email=${encodeURIComponent(email)}` : '#/login';
-      });
-
-      row.appendChild(btnCreate);
-      row.appendChild(btnBack);
-      box.appendChild(row);
-
-      root.appendChild(box);
+      };
     }
 
     // =============================
@@ -973,22 +1409,22 @@
       const in7 = daysFromNow(7);
       const in30 = daysFromNow(30);
 
-      const tasks = state.tasks.map(t => ({...t, status: computeTaskStatus(t)}));
+      const tasks = state.tasks.map(t => ({ ...t, status: computeTaskStatus(t) }));
       const dueToday = tasks.filter(t => t.dueDate && startOfDay(t.dueDate) === today && t.status !== 'DONE');
       const overdue = tasks.filter(t => t.status === 'OVERDUE');
 
       const upcomingTenders = state.tenders
         .filter(t => t.submissionDeadline)
-        .map(t => ({...t, submissionDeadline: t.submissionDeadline}))
+        .map(t => ({ ...t, submissionDeadline: t.submissionDeadline }))
         .filter(t => startOfDay(t.submissionDeadline) >= today && startOfDay(t.submissionDeadline) <= in7)
-        .sort((a,b) => a.submissionDeadline - b.submissionDeadline)
+        .sort((a, b) => a.submissionDeadline - b.submissionDeadline)
         .slice(0, 8);
 
       const expiringContracts = state.contracts
-        .map(c => ({...c, nextDate: c.renewalDate || c.endDate}))
+        .map(c => ({ ...c, nextDate: c.renewalDate || c.endDate }))
         .filter(c => c.nextDate)
         .filter(c => startOfDay(c.nextDate) >= today && startOfDay(c.nextDate) <= in30)
-        .sort((a,b) => a.nextDate - b.nextDate)
+        .sort((a, b) => a.nextDate - b.nextDate)
         .slice(0, 8);
 
       const grid = document.createElement('div');
@@ -1002,9 +1438,9 @@
         }
         const list = document.createElement('div');
         list.className = 'flex flex-col gap-2';
-        dueToday.slice(0,7).forEach(t => list.appendChild(taskRow(t)));
+        dueToday.slice(0, 7).forEach(t => list.appendChild(taskRow(t)));
         const more = mkBtn('فتح كل المهام', 'secondary', () => location.hash = '#/tasks?filter=today');
-        more.classList.add('w-full','mt-2');
+        more.classList.add('w-full', 'mt-2');
         el.appendChild(list);
         el.appendChild(more);
         return el;
@@ -1018,9 +1454,9 @@
         }
         const list = document.createElement('div');
         list.className = 'flex flex-col gap-2';
-        overdue.slice(0,7).forEach(t => list.appendChild(taskRow(t)));
+        overdue.slice(0, 7).forEach(t => list.appendChild(taskRow(t)));
         const more = mkBtn('فتح المهام المتأخرة', 'secondary', () => location.hash = '#/tasks?filter=overdue');
-        more.classList.add('w-full','mt-2');
+        more.classList.add('w-full', 'mt-2');
         el.appendChild(list);
         el.appendChild(more);
         return el;
@@ -1040,7 +1476,7 @@
           row.innerHTML = `
             <div>
               <div class="font-semibold text-sm">${escapeHtml(t.title)}</div>
-              <div class="text-xs text-slate-600 mt-1">${escapeHtml(getCompanyName(t.companyId))} • الحالة: ${escapeHtml(labels.TenderStatus[t.status]||t.status)}</div>
+              <div class="text-xs text-slate-600 mt-1">${escapeHtml(getCompanyName(t.companyId))} • الحالة: ${escapeHtml(labels.TenderStatus[t.status] || t.status)}</div>
             </div>
             <div class="text-left">
               <div class="text-xs text-slate-500">آخر موعد</div>
@@ -1053,7 +1489,7 @@
         });
         el.appendChild(list);
         const more = mkBtn('فتح كل المناقصات', 'secondary', () => location.hash = '#/tenders');
-        more.classList.add('w-full','mt-2');
+        more.classList.add('w-full', 'mt-2');
         el.appendChild(more);
         return el;
       })());
@@ -1072,7 +1508,7 @@
           row.innerHTML = `
             <div>
               <div class="font-semibold text-sm">${escapeHtml(c.title)}</div>
-              <div class="text-xs text-slate-600 mt-1">${escapeHtml(getCompanyName(c.companyId))} • الحالة: ${escapeHtml(labels.ContractStatus[c.status]||c.status)}</div>
+              <div class="text-xs text-slate-600 mt-1">${escapeHtml(getCompanyName(c.companyId))} • الحالة: ${escapeHtml(labels.ContractStatus[c.status] || c.status)}</div>
             </div>
             <div class="text-left">
               <div class="text-xs text-slate-500">التاريخ</div>
@@ -1085,7 +1521,7 @@
         });
         el.appendChild(list);
         const more = mkBtn('فتح كل العقود', 'secondary', () => location.hash = '#/contracts');
-        more.classList.add('w-full','mt-2');
+        more.classList.add('w-full', 'mt-2');
         el.appendChild(more);
         return el;
       })());
@@ -1157,7 +1593,7 @@
       left.innerHTML = `
         <div class="font-semibold text-sm">${escapeHtml(t.title)}</div>
         <div class="text-xs text-slate-600 mt-1">
-          ${escapeHtml(labels.RelatedType[t.relatedType]||t.relatedType)}: ${escapeHtml(getRelatedName(t.relatedType, t.relatedId))}
+          ${escapeHtml(labels.RelatedType[t.relatedType] || t.relatedType)}: ${escapeHtml(getRelatedName(t.relatedType, t.relatedId))}
           • الاستحقاق: ${fmtDate(t.dueDate)}
         </div>
       `;
@@ -1166,8 +1602,8 @@
       right.className = 'flex flex-col items-end gap-2';
       const badges = document.createElement('div');
       badges.className = 'flex flex-wrap gap-1 justify-end';
-      badges.appendChild(mkBadge(labels.TaskPriority[t.priority]||t.priority, t.priority==='HIGH'?'rose':(t.priority==='MEDIUM'?'amber':'slate')));
-      badges.appendChild(mkBadge(labels.TaskStatus[t.status]||t.status, t.status==='OVERDUE'?'rose':(t.status==='DONE'?'emerald':'blue')));
+      badges.appendChild(mkBadge(labels.TaskPriority[t.priority] || t.priority, t.priority === 'HIGH' ? 'rose' : (t.priority === 'MEDIUM' ? 'amber' : 'slate')));
+      badges.appendChild(mkBadge(labels.TaskStatus[t.status] || t.status, t.status === 'OVERDUE' ? 'rose' : (t.status === 'DONE' ? 'emerald' : 'blue')));
       right.appendChild(badges);
 
       const actions = document.createElement('div');
@@ -1217,7 +1653,7 @@
         label: 'تصفية حسب القطاع (اختياري)',
         type: 'select',
         value: q.get('sector') || '',
-        options: [{value:'', label:'الكل'}, ...uniqueSectors().map(s => ({value:s, label:s}))]
+        options: [{ value: '', label: 'الكل' }, ...uniqueSectors().map(s => ({ value: s, label: s }))]
       });
 
       const row = mkTwoCols(search.wrap, sector.wrap);
@@ -1237,9 +1673,9 @@
       const s = (q.get('s') || '').toLowerCase();
       const sec = q.get('sector') || '';
       let items = [...state.companies];
-      if (s) items = items.filter(c => (c.name||'').toLowerCase().includes(s) || (c.phone1||'').includes(s) || (c.phone2||'').includes(s));
-      if (sec) items = items.filter(c => (c.sector||'') === sec);
-      items.sort((a,b) => (a.name||'').localeCompare(b.name||'', 'ar'));
+      if (s) items = items.filter(c => (c.name || '').toLowerCase().includes(s) || (c.phone1 || '').includes(s) || (c.phone2 || '').includes(s));
+      if (sec) items = items.filter(c => (c.sector || '') === sec);
+      items.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ar'));
 
       if (!items.length) {
         root.appendChild(mkEmpty('ابدأ بإضافة أول شركة ثم أضف المناقصات والعقود والمهام المرتبطة بها.', [
@@ -1251,7 +1687,7 @@
 
       const rows = items.map(c => {
         const name = document.createElement('div');
-        name.innerHTML = `<div class="font-semibold">${escapeHtml(c.name)}</div><div class="text-xs text-slate-500 mt-1">${escapeHtml(c.sector||'—')} • ${escapeHtml(c.phone1||'—')}</div>`;
+        name.innerHTML = `<div class="font-semibold">${escapeHtml(c.name)}</div><div class="text-xs text-slate-500 mt-1">${escapeHtml(c.sector || '—')} • ${escapeHtml(c.phone1 || '—')}</div>`;
 
         const actions = document.createElement('div');
         actions.className = 'flex gap-2 justify-end';
@@ -1267,20 +1703,20 @@
 
         return mkTr([
           name,
-          `<div class="text-xs text-slate-600">العنوان: ${escapeHtml(c.address||'—')}<br/>البريد: ${escapeHtml(c.email||'—')}<br/>الموقع: ${escapeHtml(c.website||'—')}</div>`,
+          `<div class="text-xs text-slate-600">العنوان: ${escapeHtml(c.address || '—')}<br/>البريد: ${escapeHtml(c.email || '—')}<br/>الموقع: ${escapeHtml(c.website || '—')}</div>`,
           actions
         ]);
       });
 
-      root.appendChild(mkTable(['الشركة','بيانات','إجراءات'], rows));
+      root.appendChild(mkTable(['الشركة', 'بيانات', 'إجراءات'], rows));
     }
 
     function uniqueSectors() {
-      const set = new Set(state.companies.map(c => (c.sector||'').trim()).filter(Boolean));
-      return Array.from(set).sort((a,b) => a.localeCompare(b, 'ar'));
+      const set = new Set(state.companies.map(c => (c.sector || '').trim()).filter(Boolean));
+      return Array.from(set).sort((a, b) => a.localeCompare(b, 'ar'));
     }
 
-    function openCompanyForm(existing=null) {
+    function openCompanyForm(existing = null) {
       const isEdit = !!existing;
       const body = document.createElement('div');
 
@@ -1289,9 +1725,9 @@
       const fAddress = mkField({ label: 'العنوان', value: existing?.address || '', placeholder: 'العنوان...' });
       const fPhone1 = mkField({ label: 'هاتف 1 (أساسي)', value: existing?.phone1 || '', placeholder: '05xxxxxxxx' });
       const fPhone2 = mkField({ label: 'هاتف 2 (اختياري)', value: existing?.phone2 || '' });
-      const fEmail = mkField({ label: 'البريد (اختياري)', type:'email', value: existing?.email || '' });
-      const fWebsite = mkField({ label: 'الموقع (اختياري)', type:'url', value: existing?.website || '' });
-      const fNotes = mkField({ label: 'ملاحظات عامة', type:'textarea', rows: 4, value: existing?.notes || '', placeholder: 'أي معلومات مهمة...' });
+      const fEmail = mkField({ label: 'البريد (اختياري)', type: 'email', value: existing?.email || '' });
+      const fWebsite = mkField({ label: 'الموقع (اختياري)', type: 'url', value: existing?.website || '' });
+      const fNotes = mkField({ label: 'ملاحظات عامة', type: 'textarea', rows: 4, value: existing?.notes || '', placeholder: 'أي معلومات مهمة...' });
 
       body.appendChild(mkTwoCols(fName.wrap, fSector.wrap));
       body.appendChild(mkTwoCols(fPhone1.wrap, fPhone2.wrap));
@@ -1372,12 +1808,12 @@
       info.innerHTML = `
         <div class="text-sm font-bold">بيانات الشركة</div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 text-sm">
-          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">القطاع</div><div class="font-semibold mt-1">${escapeHtml(company.sector||'—')}</div></div>
-          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">الهاتف</div><div class="font-semibold mt-1">${escapeHtml(company.phone1||'—')}</div><div class="text-xs text-slate-600 mt-1">${escapeHtml(company.phone2||'')}</div></div>
-          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">البريد</div><div class="font-semibold mt-1">${escapeHtml(company.email||'—')}</div></div>
-          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">الموقع</div><div class="font-semibold mt-1">${escapeHtml(company.website||'—')}</div></div>
-          <div class="md:col-span-2 p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">العنوان</div><div class="font-semibold mt-1">${escapeHtml(company.address||'—')}</div></div>
-          <div class="md:col-span-2 p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">ملاحظات</div><div class="mt-1 whitespace-pre-wrap">${escapeHtml(company.notes||'—')}</div></div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">القطاع</div><div class="font-semibold mt-1">${escapeHtml(company.sector || '—')}</div></div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">الهاتف</div><div class="font-semibold mt-1">${escapeHtml(company.phone1 || '—')}</div><div class="text-xs text-slate-600 mt-1">${escapeHtml(company.phone2 || '')}</div></div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">البريد</div><div class="font-semibold mt-1">${escapeHtml(company.email || '—')}</div></div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">الموقع</div><div class="font-semibold mt-1">${escapeHtml(company.website || '—')}</div></div>
+          <div class="md:col-span-2 p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">العنوان</div><div class="font-semibold mt-1">${escapeHtml(company.address || '—')}</div></div>
+          <div class="md:col-span-2 p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">ملاحظات</div><div class="mt-1 whitespace-pre-wrap">${escapeHtml(company.notes || '—')}</div></div>
         </div>
       `;
 
@@ -1417,8 +1853,8 @@
       const body = $('[data-tab-body]', tabs);
 
       const setTab = (name) => {
-        $$('[data-tab]', tabs).forEach(b => b.classList.toggle('bg-slate-900', b.getAttribute('data-tab')===name));
-        $$('[data-tab]', tabs).forEach(b => b.classList.toggle('text-white', b.getAttribute('data-tab')===name));
+        $$('[data-tab]', tabs).forEach(b => b.classList.toggle('bg-slate-900', b.getAttribute('data-tab') === name));
+        $$('[data-tab]', tabs).forEach(b => b.classList.toggle('text-white', b.getAttribute('data-tab') === name));
         body.innerHTML = '';
         if (name === 'tenders') body.appendChild(companyTendersView(company.id));
         if (name === 'contracts') body.appendChild(companyContractsView(company.id));
@@ -1433,15 +1869,15 @@
 
     function companyTendersView(companyId) {
       const wrap = document.createElement('div');
-      const items = state.tenders.filter(t => t.companyId === companyId).sort((a,b) => (b.updatedAt||0)-(a.updatedAt||0));
+      const items = state.tenders.filter(t => t.companyId === companyId).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
       if (!items.length) {
         wrap.appendChild(mkEmpty('لا توجد مناقصات لهذه الشركة بعد.', [mkBtn('+ إضافة مناقصة', 'primary', () => openTenderForm({ companyId }))]));
         return wrap;
       }
       const rows = items.map(t => mkTr([
-        `<div class="font-semibold">${escapeHtml(t.title)}<div class="text-xs text-slate-500 mt-1">رقم: ${escapeHtml(t.refNumber||'—')}</div></div>`,
-        `<div class="text-xs text-slate-600">النوع: ${escapeHtml(labels.TenderType[t.type]||t.type)}<br/>الحالة: ${escapeHtml(labels.TenderStatus[t.status]||t.status)}<br/>آخر موعد: <b>${fmtDate(t.submissionDeadline)}</b></div>`,
-        (()=>{
+        `<div class="font-semibold">${escapeHtml(t.title)}<div class="text-xs text-slate-500 mt-1">رقم: ${escapeHtml(t.refNumber || '—')}</div></div>`,
+        `<div class="text-xs text-slate-600">النوع: ${escapeHtml(labels.TenderType[t.type] || t.type)}<br/>الحالة: ${escapeHtml(labels.TenderStatus[t.status] || t.status)}<br/>آخر موعد: <b>${fmtDate(t.submissionDeadline)}</b></div>`,
+        (() => {
           const a = document.createElement('div');
           a.className = 'flex gap-2 justify-end';
           a.appendChild(mkBtn('فتح', 'secondary', () => location.hash = `#/tender?id=${encodeURIComponent(t.id)}`));
@@ -1449,21 +1885,21 @@
           return a;
         })()
       ]));
-      wrap.appendChild(mkTable(['المناقصة','تفاصيل','إجراءات'], rows));
+      wrap.appendChild(mkTable(['المناقصة', 'تفاصيل', 'إجراءات'], rows));
       return wrap;
     }
 
     function companyContractsView(companyId) {
       const wrap = document.createElement('div');
-      const items = state.contracts.filter(c => c.companyId === companyId).sort((a,b) => (b.updatedAt||0)-(a.updatedAt||0));
+      const items = state.contracts.filter(c => c.companyId === companyId).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
       if (!items.length) {
         wrap.appendChild(mkEmpty('لا توجد عقود لهذه الشركة بعد.', [mkBtn('+ إضافة عقد', 'primary', () => openContractForm({ companyId }))]));
         return wrap;
       }
       const rows = items.map(c => mkTr([
-        `<div class="font-semibold">${escapeHtml(c.title)}<div class="text-xs text-slate-500 mt-1">رقم: ${escapeHtml(c.contractNumber||'—')}</div></div>`,
-        `<div class="text-xs text-slate-600">الحالة: ${escapeHtml(labels.ContractStatus[c.status]||c.status)}<br/>البداية: ${fmtDate(c.startDate)}<br/>النهاية: <b>${fmtDate(c.endDate)}</b></div>`,
-        (()=>{
+        `<div class="font-semibold">${escapeHtml(c.title)}<div class="text-xs text-slate-500 mt-1">رقم: ${escapeHtml(c.contractNumber || '—')}</div></div>`,
+        `<div class="text-xs text-slate-600">الحالة: ${escapeHtml(labels.ContractStatus[c.status] || c.status)}<br/>البداية: ${fmtDate(c.startDate)}<br/>النهاية: <b>${fmtDate(c.endDate)}</b></div>`,
+        (() => {
           const a = document.createElement('div');
           a.className = 'flex gap-2 justify-end';
           a.appendChild(mkBtn('فتح', 'secondary', () => location.hash = `#/contract?id=${encodeURIComponent(c.id)}`));
@@ -1471,13 +1907,13 @@
           return a;
         })()
       ]));
-      wrap.appendChild(mkTable(['العقد','تفاصيل','إجراءات'], rows));
+      wrap.appendChild(mkTable(['العقد', 'تفاصيل', 'إجراءات'], rows));
       return wrap;
     }
 
     function companyContactsView(companyId) {
       const wrap = document.createElement('div');
-      const items = state.contacts.filter(c => c.companyId === companyId).sort((a,b) => (a.name||'').localeCompare(b.name||'', 'ar'));
+      const items = state.contacts.filter(c => c.companyId === companyId).sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ar'));
       const header = document.createElement('div');
       header.className = 'flex items-center justify-between gap-2 mb-3';
       header.appendChild(mkBadge(`${items.length} جهة اتصال`, 'slate'));
@@ -1490,9 +1926,9 @@
       }
 
       const rows = items.map(p => mkTr([
-        `<div class="font-semibold">${escapeHtml(p.name)}<div class="text-xs text-slate-500 mt-1">${escapeHtml(p.role||'—')}</div></div>`,
-        `<div class="text-xs text-slate-600">الجوال/واتساب: ${escapeHtml(p.mobile||'—')}<br/>البريد: ${escapeHtml(p.email||'—')}<br/>ملاحظات: ${escapeHtml(p.notes||'—')}</div>`,
-        (()=>{
+        `<div class="font-semibold">${escapeHtml(p.name)}<div class="text-xs text-slate-500 mt-1">${escapeHtml(p.role || '—')}</div></div>`,
+        `<div class="text-xs text-slate-600">الجوال/واتساب: ${escapeHtml(p.mobile || '—')}<br/>البريد: ${escapeHtml(p.email || '—')}<br/>ملاحظات: ${escapeHtml(p.notes || '—')}</div>`,
+        (() => {
           const a = document.createElement('div');
           a.className = 'flex gap-2 justify-end';
           a.appendChild(mkBtn('تعديل', 'secondary', () => openContactForm(p)));
@@ -1506,13 +1942,13 @@
           return a;
         })()
       ]));
-      wrap.appendChild(mkTable(['الاسم','تفاصيل','إجراءات'], rows));
+      wrap.appendChild(mkTable(['الاسم', 'تفاصيل', 'إجراءات'], rows));
       return wrap;
     }
 
     function companyFollowupsView(companyId) {
       const wrap = document.createElement('div');
-      const items = state.followups.filter(f => f.companyId === companyId).sort((a,b) => (b.dateTime||0)-(a.dateTime||0));
+      const items = state.followups.filter(f => f.companyId === companyId).sort((a, b) => (b.dateTime || 0) - (a.dateTime || 0));
       const header = document.createElement('div');
       header.className = 'flex items-center justify-between gap-2 mb-3';
       header.appendChild(mkBadge(`${items.length} متابعة`, 'slate'));
@@ -1525,9 +1961,9 @@
       }
 
       const rows = items.map(f => mkTr([
-        `<div class="font-semibold">${escapeHtml(labels.FollowUpType[f.type]||f.type)}<div class="text-xs text-slate-500 mt-1">${fmtDateTime(f.dateTime)}</div></div>`,
-        `<div class="text-xs text-slate-600">الشخص: ${escapeHtml(f.contactName||'—')}<br/>الملخص: ${escapeHtml(f.summary||'—')}<br/>الخطوة التالية: ${escapeHtml(f.nextStep||'—')} • ${fmtDate(f.nextStepDate)}</div>`,
-        (()=>{
+        `<div class="font-semibold">${escapeHtml(labels.FollowUpType[f.type] || f.type)}<div class="text-xs text-slate-500 mt-1">${fmtDateTime(f.dateTime)}</div></div>`,
+        `<div class="text-xs text-slate-600">الشخص: ${escapeHtml(f.contactName || '—')}<br/>الملخص: ${escapeHtml(f.summary || '—')}<br/>الخطوة التالية: ${escapeHtml(f.nextStep || '—')} • ${fmtDate(f.nextStepDate)}</div>`,
+        (() => {
           const a = document.createElement('div');
           a.className = 'flex gap-2 justify-end';
           a.appendChild(mkBtn('تعديل', 'secondary', () => openFollowUpForm(f)));
@@ -1541,14 +1977,14 @@
           return a;
         })()
       ]));
-      wrap.appendChild(mkTable(['النشاط','تفاصيل','إجراءات'], rows));
+      wrap.appendChild(mkTable(['النشاط', 'تفاصيل', 'إجراءات'], rows));
       return wrap;
     }
 
     // =============================
     // Contacts
     // =============================
-    function openContactForm(existingOrDefaults=null) {
+    function openContactForm(existingOrDefaults = null) {
       const existing = (existingOrDefaults && existingOrDefaults.id) ? existingOrDefaults : null;
       const defaults = existing ? {} : (existingOrDefaults || {});
       const isEdit = !!existing;
@@ -1559,13 +1995,13 @@
         label: 'الشركة *',
         type: 'select',
         value: (existing?.companyId || defaults.companyId || ''),
-        options: [{value:'', label:'اختر شركة...'}, ...state.companies.map(c => ({value:c.id, label:c.name}))]
+        options: [{ value: '', label: 'اختر شركة...' }, ...state.companies.map(c => ({ value: c.id, label: c.name }))]
       });
       const fName = mkField({ label: 'اسم الشخص *', value: existing?.name || '', placeholder: 'مثال: أحمد محمد' });
       const fRole = mkField({ label: 'المسمى الوظيفي', value: existing?.role || '', placeholder: 'مثال: مدير مشتريات' });
       const fMobile = mkField({ label: 'جوال / واتساب', value: existing?.mobile || '', placeholder: '05xxxxxxxx' });
-      const fEmail = mkField({ label: 'البريد (اختياري)', type:'email', value: existing?.email || '' });
-      const fNotes = mkField({ label: 'ملاحظات', type:'textarea', rows: 3, value: existing?.notes || '', placeholder: 'مثال: يفضّل الاتصال بعد العصر...' });
+      const fEmail = mkField({ label: 'البريد (اختياري)', type: 'email', value: existing?.email || '' });
+      const fNotes = mkField({ label: 'ملاحظات', type: 'textarea', rows: 3, value: existing?.notes || '', placeholder: 'مثال: يفضّل الاتصال بعد العصر...' });
 
       body.appendChild(mkTwoCols(fCompany.wrap, fName.wrap));
       body.appendChild(mkTwoCols(fRole.wrap, fMobile.wrap));
@@ -1611,22 +2047,22 @@
       const controls = document.createElement('div');
       controls.className = 'bg-white border border-slate-200 rounded-2xl p-4 shadow-soft';
 
-      const search = mkField({ label: 'بحث', placeholder: 'العنوان أو رقم المرجع...', value: q.get('s')||'' });
+      const search = mkField({ label: 'بحث', placeholder: 'العنوان أو رقم المرجع...', value: q.get('s') || '' });
       const status = mkField({
         label: 'الحالة',
-        type:'select',
-        value: q.get('status')||'',
-        options: [{value:'', label:'الكل'}, ...Enums.TenderStatus.map(v => ({value:v, label: labels.TenderStatus[v]||v}))]
+        type: 'select',
+        value: q.get('status') || '',
+        options: [{ value: '', label: 'الكل' }, ...Enums.TenderStatus.map(v => ({ value: v, label: labels.TenderStatus[v] || v }))]
       });
       const company = mkField({
         label: 'الشركة',
-        type:'select',
-        value: q.get('company')||'',
-        options: [{value:'', label:'الكل'}, ...state.companies.map(c => ({value:c.id, label:c.name}))]
+        type: 'select',
+        value: q.get('company') || '',
+        options: [{ value: '', label: 'الكل' }, ...state.companies.map(c => ({ value: c.id, label: c.name }))]
       });
 
-      const from = mkField({ label: 'من تاريخ آخر موعد', type:'date', value: q.get('from')||'' });
-      const to = mkField({ label: 'إلى تاريخ آخر موعد', type:'date', value: q.get('to')||'' });
+      const from = mkField({ label: 'من تاريخ آخر موعد', type: 'date', value: q.get('from') || '' });
+      const to = mkField({ label: 'إلى تاريخ آخر موعد', type: 'date', value: q.get('to') || '' });
 
       controls.appendChild(mkTwoCols(search.wrap, status.wrap));
       controls.appendChild(mkTwoCols(company.wrap, from.wrap));
@@ -1645,19 +2081,19 @@
       controls.appendChild(apply);
       root.appendChild(controls);
 
-      const s = (q.get('s')||'').toLowerCase();
-      const st = q.get('status')||'';
-      const comp = q.get('company')||'';
-      const fromTs = fromISODate(q.get('from')||'');
-      const toTs = fromISODate(q.get('to')||'');
+      const s = (q.get('s') || '').toLowerCase();
+      const st = q.get('status') || '';
+      const comp = q.get('company') || '';
+      const fromTs = fromISODate(q.get('from') || '');
+      const toTs = fromISODate(q.get('to') || '');
 
       let items = [...state.tenders];
-      if (s) items = items.filter(t => (t.title||'').toLowerCase().includes(s) || (t.refNumber||'').toLowerCase().includes(s));
+      if (s) items = items.filter(t => (t.title || '').toLowerCase().includes(s) || (t.refNumber || '').toLowerCase().includes(s));
       if (st) items = items.filter(t => t.status === st);
       if (comp) items = items.filter(t => t.companyId === comp);
       if (fromTs) items = items.filter(t => t.submissionDeadline && startOfDay(t.submissionDeadline) >= startOfDay(fromTs));
       if (toTs) items = items.filter(t => t.submissionDeadline && startOfDay(t.submissionDeadline) <= startOfDay(toTs));
-      items.sort((a,b) => (a.submissionDeadline||Infinity) - (b.submissionDeadline||Infinity));
+      items.sort((a, b) => (a.submissionDeadline || Infinity) - (b.submissionDeadline || Infinity));
 
       if (!items.length) {
         root.appendChild(mkEmpty('لا توجد مناقصات مطابقة للبحث/التصفية. يمكنك إضافة مناقصة جديدة.', [
@@ -1672,8 +2108,8 @@
         title.innerHTML = `<div class="font-semibold">${escapeHtml(t.title)}</div><div class="text-xs text-slate-500 mt-1">${escapeHtml(getCompanyName(t.companyId))}</div>`;
         const statusBadge = document.createElement('div');
         statusBadge.className = 'flex flex-col items-start gap-2';
-        statusBadge.appendChild(mkBadge(labels.TenderStatus[t.status]||t.status, t.status==='AWARDED'?'emerald':(t.status==='LOST'?'rose':'blue')));
-        statusBadge.appendChild(mkBadge(labels.TenderType[t.type]||t.type, 'slate'));
+        statusBadge.appendChild(mkBadge(labels.TenderStatus[t.status] || t.status, t.status === 'AWARDED' ? 'emerald' : (t.status === 'LOST' ? 'rose' : 'blue')));
+        statusBadge.appendChild(mkBadge(labels.TenderType[t.type] || t.type, 'slate'));
 
         const dateInfo = document.createElement('div');
         dateInfo.className = 'text-xs text-slate-600';
@@ -1694,10 +2130,10 @@
         return mkTr([title, statusBadge, dateInfo, actions]);
       });
 
-      root.appendChild(mkTable(['العنوان','الحالة/النوع','التواريخ','إجراءات'], rows));
+      root.appendChild(mkTable(['العنوان', 'الحالة/النوع', 'التواريخ', 'إجراءات'], rows));
     }
 
-    function openTenderForm(existingOrDefaults=null) {
+    function openTenderForm(existingOrDefaults = null) {
       const existing = (existingOrDefaults && existingOrDefaults.id) ? existingOrDefaults : null;
       const defaults = existing ? {} : (existingOrDefaults || {});
       const isEdit = !!existing;
@@ -1706,39 +2142,39 @@
 
       const fCompany = mkField({
         label: 'الشركة *',
-        type:'select',
+        type: 'select',
         value: (existing?.companyId || defaults.companyId || ''),
-        options: [{value:'', label:'اختر شركة...'}, ...state.companies.map(c => ({value:c.id, label:c.name}))],
+        options: [{ value: '', label: 'اختر شركة...' }, ...state.companies.map(c => ({ value: c.id, label: c.name }))],
         help: 'يفضّل إنشاء الشركة أولاً ثم ربط المناقصة بها.'
       });
       const fTitle = mkField({ label: 'عنوان المناقصة/الفرصة *', value: existing?.title || '', placeholder: 'مثال: توريد معدات...' });
       const fRef = mkField({ label: 'رقم/مرجع (اختياري)', value: existing?.refNumber || '' });
       const fType = mkField({
         label: 'النوع',
-        type:'select',
+        type: 'select',
         value: existing?.type || 'TENDER',
-        options: Enums.TenderType.map(v => ({value:v, label: labels.TenderType[v]||v}))
+        options: Enums.TenderType.map(v => ({ value: v, label: labels.TenderType[v] || v }))
       });
       const fStatus = mkField({
         label: 'الحالة',
-        type:'select',
+        type: 'select',
         value: existing?.status || 'PREPARATION',
-        options: Enums.TenderStatus.map(v => ({value:v, label: labels.TenderStatus[v]||v}))
+        options: Enums.TenderStatus.map(v => ({ value: v, label: labels.TenderStatus[v] || v }))
       });
 
-      const fDocsDeadline = mkField({ label: 'آخر موعد شراء الكراسة (اختياري)', type:'date', value: toISODate(existing?.docsPurchaseDeadline) });
-      const fSubmission = mkField({ label: 'آخر موعد تقديم العرض *', type:'date', value: toISODate(existing?.submissionDeadline) });
-      const fTechOpen = mkField({ label: 'فتح المظروف الفني (اختياري)', type:'date', value: toISODate(existing?.technicalOpeningDate) });
-      const fFinOpen = mkField({ label: 'فتح المظروف المالي (اختياري)', type:'date', value: toISODate(existing?.financialOpeningDate) });
-      const fAward = mkField({ label: 'تاريخ الترسية (اختياري)', type:'date', value: toISODate(existing?.awardDate) });
+      const fDocsDeadline = mkField({ label: 'آخر موعد شراء الكراسة (اختياري)', type: 'date', value: toISODate(existing?.docsPurchaseDeadline) });
+      const fSubmission = mkField({ label: 'آخر موعد تقديم العرض *', type: 'date', value: toISODate(existing?.submissionDeadline) });
+      const fTechOpen = mkField({ label: 'فتح المظروف الفني (اختياري)', type: 'date', value: toISODate(existing?.technicalOpeningDate) });
+      const fFinOpen = mkField({ label: 'فتح المظروف المالي (اختياري)', type: 'date', value: toISODate(existing?.financialOpeningDate) });
+      const fAward = mkField({ label: 'تاريخ الترسية (اختياري)', type: 'date', value: toISODate(existing?.awardDate) });
 
-      const fExpectedValue = mkField({ label: 'القيمة المتوقعة (اختياري)', type:'number', value: existing?.expectedValue ?? '' });
-      const fFinalValue = mkField({ label: 'القيمة النهائية (اختياري)', type:'number', value: existing?.finalValue ?? '' });
-      const fPrimaryG = mkField({ label: 'الضمان الابتدائي (اختياري)', type:'number', value: existing?.primaryGuarantee ?? '' });
-      const fFinalG = mkField({ label: 'الضمان النهائي (اختياري)', type:'number', value: existing?.finalGuarantee ?? '' });
-      const fMargin = mkField({ label: 'هامش الربح % (اختياري)', type:'number', value: existing?.margin ?? '' });
+      const fExpectedValue = mkField({ label: 'القيمة المتوقعة (اختياري)', type: 'number', value: existing?.expectedValue ?? '' });
+      const fFinalValue = mkField({ label: 'القيمة النهائية (اختياري)', type: 'number', value: existing?.finalValue ?? '' });
+      const fPrimaryG = mkField({ label: 'الضمان الابتدائي (اختياري)', type: 'number', value: existing?.primaryGuarantee ?? '' });
+      const fFinalG = mkField({ label: 'الضمان النهائي (اختياري)', type: 'number', value: existing?.finalGuarantee ?? '' });
+      const fMargin = mkField({ label: 'هامش الربح % (اختياري)', type: 'number', value: existing?.margin ?? '' });
 
-      const fNotes = mkField({ label: 'ملاحظات', type:'textarea', rows: 4, value: existing?.notes || '', placeholder:'منافسين، شروط خاصة، ...' });
+      const fNotes = mkField({ label: 'ملاحظات', type: 'textarea', rows: 4, value: existing?.notes || '', placeholder: 'منافسين، شروط خاصة، ...' });
 
       body.appendChild(mkTwoCols(fCompany.wrap, fTitle.wrap));
       body.appendChild(mkTwoCols(fRef.wrap, fType.wrap));
@@ -1821,7 +2257,7 @@
       const companyName = getCompanyName(t.companyId);
       setPage(t.title, `الشركة: ${companyName}`, [
         mkBtn('تعديل', 'secondary', () => openTenderForm(t)),
-        mkBtn('+ مهمة مرتبطة', 'primary', () => openTaskForm({ relatedType:'TENDER', relatedId: t.id })),
+        mkBtn('+ مهمة مرتبطة', 'primary', () => openTaskForm({ relatedType: 'TENDER', relatedId: t.id })),
         mkBtn('فتح الشركة', 'secondary', () => location.hash = `#/company?id=${encodeURIComponent(t.companyId)}`)
       ]);
 
@@ -1833,14 +2269,14 @@
       basic.innerHTML = `
         <div class="text-sm font-bold">معلومات أساسية</div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 text-sm">
-          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">النوع</div><div class="font-semibold mt-1">${escapeHtml(labels.TenderType[t.type]||t.type)}</div></div>
-          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">الحالة</div><div class="font-semibold mt-1">${escapeHtml(labels.TenderStatus[t.status]||t.status)}</div></div>
-          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">رقم/مرجع</div><div class="font-semibold mt-1">${escapeHtml(t.refNumber||'—')}</div></div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">النوع</div><div class="font-semibold mt-1">${escapeHtml(labels.TenderType[t.type] || t.type)}</div></div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">الحالة</div><div class="font-semibold mt-1">${escapeHtml(labels.TenderStatus[t.status] || t.status)}</div></div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">رقم/مرجع</div><div class="font-semibold mt-1">${escapeHtml(t.refNumber || '—')}</div></div>
           <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">آخر موعد تقديم</div><div class="font-semibold mt-1">${fmtDate(t.submissionDeadline)}</div></div>
           <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">شراء الكراسة</div><div class="font-semibold mt-1">${fmtDate(t.docsPurchaseDeadline)}</div></div>
           <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">فتح فني/مالي</div><div class="font-semibold mt-1">${fmtDate(t.technicalOpeningDate)} / ${fmtDate(t.financialOpeningDate)}</div></div>
           <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">تاريخ الترسية</div><div class="font-semibold mt-1">${fmtDate(t.awardDate)}</div></div>
-          <div class="md:col-span-2 p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">ملاحظات</div><div class="mt-1 whitespace-pre-wrap">${escapeHtml(t.notes||'—')}</div></div>
+          <div class="md:col-span-2 p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">ملاحظات</div><div class="mt-1 whitespace-pre-wrap">${escapeHtml(t.notes || '—')}</div></div>
         </div>
       `;
 
@@ -1864,8 +2300,8 @@
 
       // Related tasks
       const related = state.tasks.filter(x => x.relatedType === 'TENDER' && x.relatedId === t.id)
-        .map(x => ({...x, status: computeTaskStatus(x)}))
-        .sort((a,b) => (a.dueDate||Infinity)-(b.dueDate||Infinity));
+        .map(x => ({ ...x, status: computeTaskStatus(x) }))
+        .sort((a, b) => (a.dueDate || Infinity) - (b.dueDate || Infinity));
 
       const tasksBox = document.createElement('div');
       tasksBox.className = 'mt-4 bg-white border border-slate-200 rounded-2xl p-4 shadow-soft';
@@ -1881,7 +2317,7 @@
       list.className = 'mt-3 flex flex-col gap-2';
       if (!related.length) {
         list.appendChild(mkEmpty('أضف مهام مثل: شراء الكراسة، تسليم العرض الفني، إلخ.', [
-          mkBtn('+ إضافة مهمة', 'primary', () => openTaskForm({ relatedType:'TENDER', relatedId: t.id }))
+          mkBtn('+ إضافة مهمة', 'primary', () => openTaskForm({ relatedType: 'TENDER', relatedId: t.id }))
         ]));
       } else {
         related.forEach(tt => list.appendChild(taskRow(tt)));
@@ -1901,22 +2337,22 @@
       const controls = document.createElement('div');
       controls.className = 'bg-white border border-slate-200 rounded-2xl p-4 shadow-soft';
 
-      const search = mkField({ label: 'بحث', placeholder: 'العنوان أو رقم العقد...', value: q.get('s')||'' });
+      const search = mkField({ label: 'بحث', placeholder: 'العنوان أو رقم العقد...', value: q.get('s') || '' });
       const status = mkField({
         label: 'الحالة',
-        type:'select',
-        value: q.get('status')||'',
-        options: [{value:'', label:'الكل'}, ...Enums.ContractStatus.map(v => ({value:v, label: labels.ContractStatus[v]||v}))]
+        type: 'select',
+        value: q.get('status') || '',
+        options: [{ value: '', label: 'الكل' }, ...Enums.ContractStatus.map(v => ({ value: v, label: labels.ContractStatus[v] || v }))]
       });
       const company = mkField({
         label: 'الشركة',
-        type:'select',
-        value: q.get('company')||'',
-        options: [{value:'', label:'الكل'}, ...state.companies.map(c => ({value:c.id, label:c.name}))]
+        type: 'select',
+        value: q.get('company') || '',
+        options: [{ value: '', label: 'الكل' }, ...state.companies.map(c => ({ value: c.id, label: c.name }))]
       });
 
-      const from = mkField({ label: 'من تاريخ نهاية/تجديد', type:'date', value: q.get('from')||'' });
-      const to = mkField({ label: 'إلى تاريخ نهاية/تجديد', type:'date', value: q.get('to')||'' });
+      const from = mkField({ label: 'من تاريخ نهاية/تجديد', type: 'date', value: q.get('from') || '' });
+      const to = mkField({ label: 'إلى تاريخ نهاية/تجديد', type: 'date', value: q.get('to') || '' });
 
       controls.appendChild(mkTwoCols(search.wrap, status.wrap));
       controls.appendChild(mkTwoCols(company.wrap, from.wrap));
@@ -1935,14 +2371,14 @@
       controls.appendChild(apply);
       root.appendChild(controls);
 
-      const s = (q.get('s')||'').toLowerCase();
-      const st = q.get('status')||'';
-      const comp = q.get('company')||'';
-      const fromTs = fromISODate(q.get('from')||'');
-      const toTs = fromISODate(q.get('to')||'');
+      const s = (q.get('s') || '').toLowerCase();
+      const st = q.get('status') || '';
+      const comp = q.get('company') || '';
+      const fromTs = fromISODate(q.get('from') || '');
+      const toTs = fromISODate(q.get('to') || '');
 
       let items = [...state.contracts];
-      if (s) items = items.filter(c => (c.title||'').toLowerCase().includes(s) || (c.contractNumber||'').toLowerCase().includes(s));
+      if (s) items = items.filter(c => (c.title || '').toLowerCase().includes(s) || (c.contractNumber || '').toLowerCase().includes(s));
       if (st) items = items.filter(c => c.status === st);
       if (comp) items = items.filter(c => c.companyId === comp);
       if (fromTs) items = items.filter(c => {
@@ -1953,7 +2389,7 @@
         const dt = c.renewalDate || c.endDate;
         return dt && startOfDay(dt) <= startOfDay(toTs);
       });
-      items.sort((a,b) => ((a.renewalDate||a.endDate||Infinity) - (b.renewalDate||b.endDate||Infinity)));
+      items.sort((a, b) => ((a.renewalDate || a.endDate || Infinity) - (b.renewalDate || b.endDate || Infinity)));
 
       if (!items.length) {
         root.appendChild(mkEmpty('لا توجد عقود مطابقة للبحث/التصفية. يمكنك إضافة عقد جديد.', [
@@ -1969,7 +2405,7 @@
 
         const statusBadge = document.createElement('div');
         statusBadge.className = 'flex flex-col items-start gap-2';
-        statusBadge.appendChild(mkBadge(labels.ContractStatus[c.status]||c.status, c.status==='ACTIVE'?'emerald':(c.status==='EXPIRED'?'rose':'amber')));
+        statusBadge.appendChild(mkBadge(labels.ContractStatus[c.status] || c.status, c.status === 'ACTIVE' ? 'emerald' : (c.status === 'EXPIRED' ? 'rose' : 'amber')));
 
         const dateInfo = document.createElement('div');
         dateInfo.className = 'text-xs text-slate-600';
@@ -1990,10 +2426,10 @@
         return mkTr([title, statusBadge, dateInfo, actions]);
       });
 
-      root.appendChild(mkTable(['العنوان','الحالة','التواريخ','إجراءات'], rows));
+      root.appendChild(mkTable(['العنوان', 'الحالة', 'التواريخ', 'إجراءات'], rows));
     }
 
-    function openContractForm(existingOrDefaults=null) {
+    function openContractForm(existingOrDefaults = null) {
       const existing = (existingOrDefaults && existingOrDefaults.id) ? existingOrDefaults : null;
       const defaults = existing ? {} : (existingOrDefaults || {});
       const isEdit = !!existing;
@@ -2002,27 +2438,27 @@
 
       const fCompany = mkField({
         label: 'الشركة *',
-        type:'select',
+        type: 'select',
         value: (existing?.companyId || defaults.companyId || ''),
-        options: [{value:'', label:'اختر شركة...'}, ...state.companies.map(c => ({value:c.id, label:c.name}))]
+        options: [{ value: '', label: 'اختر شركة...' }, ...state.companies.map(c => ({ value: c.id, label: c.name }))]
       });
       const fTitle = mkField({ label: 'عنوان العقد *', value: existing?.title || '', placeholder: 'مثال: عقد صيانة...' });
       const fNumber = mkField({ label: 'رقم العقد (اختياري)', value: existing?.contractNumber || '' });
 
-      const fStart = mkField({ label: 'تاريخ البداية *', type:'date', value: toISODate(existing?.startDate) });
-      const fEnd = mkField({ label: 'تاريخ النهاية *', type:'date', value: toISODate(existing?.endDate) });
-      const fRenewal = mkField({ label: 'تاريخ تجديد/مراجعة (اختياري)', type:'date', value: toISODate(existing?.renewalDate) });
+      const fStart = mkField({ label: 'تاريخ البداية *', type: 'date', value: toISODate(existing?.startDate) });
+      const fEnd = mkField({ label: 'تاريخ النهاية *', type: 'date', value: toISODate(existing?.endDate) });
+      const fRenewal = mkField({ label: 'تاريخ تجديد/مراجعة (اختياري)', type: 'date', value: toISODate(existing?.renewalDate) });
 
-      const fValue = mkField({ label: 'قيمة العقد *', type:'number', value: existing?.value ?? '' });
+      const fValue = mkField({ label: 'قيمة العقد *', type: 'number', value: existing?.value ?? '' });
       const fPayment = mkField({ label: 'شروط الدفع', value: existing?.paymentTerms || '', placeholder: 'مثال: شهري / ربع سنوي / دفعات...' });
       const fStatus = mkField({
         label: 'الحالة',
-        type:'select',
+        type: 'select',
         value: existing?.status || 'ACTIVE',
-        options: Enums.ContractStatus.map(v => ({value:v, label: labels.ContractStatus[v]||v}))
+        options: Enums.ContractStatus.map(v => ({ value: v, label: labels.ContractStatus[v] || v }))
       });
 
-      const fNotes = mkField({ label: 'ملاحظات', type:'textarea', rows: 4, value: existing?.notes || '' });
+      const fNotes = mkField({ label: 'ملاحظات', type: 'textarea', rows: 4, value: existing?.notes || '' });
 
       body.appendChild(mkTwoCols(fCompany.wrap, fTitle.wrap));
       body.appendChild(mkTwoCols(fNumber.wrap, fStatus.wrap));
@@ -2089,7 +2525,7 @@
       const companyName = getCompanyName(c.companyId);
       setPage(c.title, `الشركة: ${companyName}`, [
         mkBtn('تعديل', 'secondary', () => openContractForm(c)),
-        mkBtn('+ مهمة مرتبطة', 'primary', () => openTaskForm({ relatedType:'CONTRACT', relatedId: c.id })),
+        mkBtn('+ مهمة مرتبطة', 'primary', () => openTaskForm({ relatedType: 'CONTRACT', relatedId: c.id })),
         mkBtn('فتح الشركة', 'secondary', () => location.hash = `#/company?id=${encodeURIComponent(c.companyId)}`)
       ]);
 
@@ -2101,27 +2537,27 @@
       basic.innerHTML = `
         <div class="text-sm font-bold">معلومات أساسية</div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 text-sm">
-          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">الحالة</div><div class="font-semibold mt-1">${escapeHtml(labels.ContractStatus[c.status]||c.status)}</div></div>
-          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">رقم العقد</div><div class="font-semibold mt-1">${escapeHtml(c.contractNumber||'—')}</div></div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">الحالة</div><div class="font-semibold mt-1">${escapeHtml(labels.ContractStatus[c.status] || c.status)}</div></div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">رقم العقد</div><div class="font-semibold mt-1">${escapeHtml(c.contractNumber || '—')}</div></div>
           <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">تاريخ البداية</div><div class="font-semibold mt-1">${fmtDate(c.startDate)}</div></div>
           <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">تاريخ النهاية</div><div class="font-semibold mt-1">${fmtDate(c.endDate)}</div></div>
           <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">تاريخ التجديد/المراجعة</div><div class="font-semibold mt-1">${fmtDate(c.renewalDate)}</div></div>
           <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">قيمة العقد</div><div class="font-semibold mt-1">${escapeHtml(c.value ?? '—')}</div></div>
-          <div class="md:col-span-2 p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">شروط الدفع</div><div class="mt-1 whitespace-pre-wrap">${escapeHtml(c.paymentTerms||'—')}</div></div>
-          <div class="md:col-span-2 p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">ملاحظات</div><div class="mt-1 whitespace-pre-wrap">${escapeHtml(c.notes||'—')}</div></div>
+          <div class="md:col-span-2 p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">شروط الدفع</div><div class="mt-1 whitespace-pre-wrap">${escapeHtml(c.paymentTerms || '—')}</div></div>
+          <div class="md:col-span-2 p-3 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs text-slate-500">ملاحظات</div><div class="mt-1 whitespace-pre-wrap">${escapeHtml(c.notes || '—')}</div></div>
         </div>
       `;
 
       const side = document.createElement('div');
       side.className = 'bg-white border border-slate-200 rounded-2xl p-4 shadow-soft';
       const next = c.renewalDate || c.endDate;
-      const days = next ? Math.round((startOfDay(next)-startOfDay(nowTs()))/(24*60*60*1000)) : null;
+      const days = next ? Math.round((startOfDay(next) - startOfDay(nowTs())) / (24 * 60 * 60 * 1000)) : null;
       side.innerHTML = `
         <div class="text-sm font-bold">تنبيه</div>
         <div class="mt-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
           <div class="text-xs text-slate-500">أقرب تاريخ</div>
           <div class="text-lg font-bold mt-1">${fmtDate(next)}</div>
-          <div class="text-xs text-slate-600 mt-1">${days===null?'—':(days>=0?`بعد ${days} يوم`:`منذ ${Math.abs(days)} يوم`)}</div>
+          <div class="text-xs text-slate-600 mt-1">${days === null ? '—' : (days >= 0 ? `بعد ${days} يوم` : `منذ ${Math.abs(days)} يوم`)}</div>
         </div>
         <div class="mt-4 text-xs text-slate-500">آخر تحديث: ${fmtDateTime(c.updatedAt)}</div>
       `;
@@ -2132,8 +2568,8 @@
 
       // Related tasks
       const related = state.tasks.filter(x => x.relatedType === 'CONTRACT' && x.relatedId === c.id)
-        .map(x => ({...x, status: computeTaskStatus(x)}))
-        .sort((a,b) => (a.dueDate||Infinity)-(b.dueDate||Infinity));
+        .map(x => ({ ...x, status: computeTaskStatus(x) }))
+        .sort((a, b) => (a.dueDate || Infinity) - (b.dueDate || Infinity));
 
       const tasksBox = document.createElement('div');
       tasksBox.className = 'mt-4 bg-white border border-slate-200 rounded-2xl p-4 shadow-soft';
@@ -2149,7 +2585,7 @@
       list.className = 'mt-3 flex flex-col gap-2';
       if (!related.length) {
         list.appendChild(mkEmpty('أضف مهام مثل: مراجعة التجديد، تجهيز مستندات، إلخ.', [
-          mkBtn('+ إضافة مهمة', 'primary', () => openTaskForm({ relatedType:'CONTRACT', relatedId: c.id }))
+          mkBtn('+ إضافة مهمة', 'primary', () => openTaskForm({ relatedType: 'CONTRACT', relatedId: c.id }))
         ]));
       } else {
         related.forEach(tt => list.appendChild(taskRow(tt)));
@@ -2171,29 +2607,29 @@
 
       const filter = mkField({
         label: 'فلتر سريع',
-        type:'select',
-        value: q.get('filter')||'',
+        type: 'select',
+        value: q.get('filter') || '',
         options: [
-          {value:'', label:'الكل'},
-          {value:'today', label:'مستحقة اليوم'},
-          {value:'overdue', label:'متأخرة'},
-          {value:'open', label:'غير منتهية'},
-          {value:'done', label:'منتهية'}
+          { value: '', label: 'الكل' },
+          { value: 'today', label: 'مستحقة اليوم' },
+          { value: 'overdue', label: 'متأخرة' },
+          { value: 'open', label: 'غير منتهية' },
+          { value: 'done', label: 'منتهية' }
         ]
       });
       const priority = mkField({
         label: 'الأولوية',
-        type:'select',
-        value: q.get('priority')||'',
-        options: [{value:'', label:'الكل'}, ...Enums.TaskPriority.map(v => ({value:v, label: labels.TaskPriority[v]||v}))]
+        type: 'select',
+        value: q.get('priority') || '',
+        options: [{ value: '', label: 'الكل' }, ...Enums.TaskPriority.map(v => ({ value: v, label: labels.TaskPriority[v] || v }))]
       });
       const relatedType = mkField({
         label: 'نوع الارتباط',
-        type:'select',
-        value: q.get('rt')||'',
-        options: [{value:'', label:'الكل'}, ...Enums.RelatedType.map(v => ({value:v, label: labels.RelatedType[v]||v}))]
+        type: 'select',
+        value: q.get('rt') || '',
+        options: [{ value: '', label: 'الكل' }, ...Enums.RelatedType.map(v => ({ value: v, label: labels.RelatedType[v] || v }))]
       });
-      const search = mkField({ label: 'بحث', placeholder: 'عنوان المهمة...', value: q.get('s')||'' });
+      const search = mkField({ label: 'بحث', placeholder: 'عنوان المهمة...', value: q.get('s') || '' });
 
       controls.appendChild(mkTwoCols(filter.wrap, priority.wrap));
       controls.appendChild(mkTwoCols(relatedType.wrap, search.wrap));
@@ -2211,24 +2647,24 @@
       root.appendChild(controls);
 
       const today = startOfDay(nowTs());
-      let items = state.tasks.map(t => ({...t, status: computeTaskStatus(t)}));
+      let items = state.tasks.map(t => ({ ...t, status: computeTaskStatus(t) }));
 
-      const f = q.get('filter')||'';
+      const f = q.get('filter') || '';
       if (f === 'today') items = items.filter(t => t.dueDate && startOfDay(t.dueDate) === today && t.status !== 'DONE');
       if (f === 'overdue') items = items.filter(t => t.status === 'OVERDUE');
       if (f === 'open') items = items.filter(t => t.status !== 'DONE');
       if (f === 'done') items = items.filter(t => t.status === 'DONE');
 
-      const pr = q.get('priority')||'';
+      const pr = q.get('priority') || '';
       if (pr) items = items.filter(t => t.priority === pr);
 
-      const rt = q.get('rt')||'';
+      const rt = q.get('rt') || '';
       if (rt) items = items.filter(t => t.relatedType === rt);
 
-      const s = (q.get('s')||'').toLowerCase();
-      if (s) items = items.filter(t => (t.title||'').toLowerCase().includes(s));
+      const s = (q.get('s') || '').toLowerCase();
+      if (s) items = items.filter(t => (t.title || '').toLowerCase().includes(s));
 
-      items.sort((a,b) => (a.status==='OVERDUE'?-1:0) - (b.status==='OVERDUE'?-1:0) || (a.dueDate||Infinity)-(b.dueDate||Infinity));
+      items.sort((a, b) => (a.status === 'OVERDUE' ? -1 : 0) - (b.status === 'OVERDUE' ? -1 : 0) || (a.dueDate || Infinity) - (b.dueDate || Infinity));
 
       if (!items.length) {
         root.appendChild(mkEmpty('لا توجد مهام مطابقة. جرّب إضافة مهمة جديدة أو تغيير الفلاتر.', [
@@ -2244,7 +2680,7 @@
       root.appendChild(list);
     }
 
-    function openTaskForm(existingOrDefaults=null) {
+    function openTaskForm(existingOrDefaults = null) {
       const existing = (existingOrDefaults && existingOrDefaults.id) ? existingOrDefaults : null;
       const defaults = existing ? {} : (existingOrDefaults || {});
       const isEdit = !!existing;
@@ -2253,56 +2689,56 @@
 
       const fRelatedType = mkField({
         label: 'نوع الارتباط *',
-        type:'select',
+        type: 'select',
         value: existing?.relatedType || defaults.relatedType || 'COMPANY',
-        options: Enums.RelatedType.map(v => ({value:v, label: labels.RelatedType[v]||v}))
+        options: Enums.RelatedType.map(v => ({ value: v, label: labels.RelatedType[v] || v }))
       });
 
       const fRelatedId = mkField({
         label: 'العنصر المرتبط *',
-        type:'select',
+        type: 'select',
         value: existing?.relatedId || defaults.relatedId || '',
-        options: [{value:'', label:'—'}]
+        options: [{ value: '', label: '—' }]
       });
 
       const fTitle = mkField({ label: 'عنوان المهمة *', value: existing?.title || '', placeholder: 'مثال: شراء كراسة الشروط' });
-      const fDesc = mkField({ label: 'الوصف (اختياري)', type:'textarea', rows: 3, value: existing?.description || '' });
-      const fDue = mkField({ label: 'تاريخ الاستحقاق *', type:'date', value: toISODate(existing?.dueDate) });
+      const fDesc = mkField({ label: 'الوصف (اختياري)', type: 'textarea', rows: 3, value: existing?.description || '' });
+      const fDue = mkField({ label: 'تاريخ الاستحقاق *', type: 'date', value: toISODate(existing?.dueDate) });
 
       const fPriority = mkField({
         label: 'الأولوية',
-        type:'select',
+        type: 'select',
         value: existing?.priority || 'MEDIUM',
-        options: Enums.TaskPriority.map(v => ({value:v, label: labels.TaskPriority[v]||v}))
+        options: Enums.TaskPriority.map(v => ({ value: v, label: labels.TaskPriority[v] || v }))
       });
 
       const fStatus = mkField({
         label: 'الحالة',
-        type:'select',
+        type: 'select',
         value: existing?.status || 'NEW',
-        options: Enums.TaskStatus.map(v => ({value:v, label: labels.TaskStatus[v]||v}))
+        options: Enums.TaskStatus.map(v => ({ value: v, label: labels.TaskStatus[v] || v }))
       });
 
       const fReminder = mkField({
         label: 'تذكير قبل الاستحقاق (أيام)',
-        type:'select',
+        type: 'select',
         value: (existing?.reminderOffset ?? 1).toString(),
         options: [
-          {value:'0', label:'بدون'},
-          {value:'1', label:'قبل يوم'},
-          {value:'2', label:'قبل يومين'},
-          {value:'3', label:'قبل 3 أيام'},
-          {value:'7', label:'قبل أسبوع'}
+          { value: '0', label: 'بدون' },
+          { value: '1', label: 'قبل يوم' },
+          { value: '2', label: 'قبل يومين' },
+          { value: '3', label: 'قبل 3 أيام' },
+          { value: '7', label: 'قبل أسبوع' }
         ],
         help: 'في Android سيتم جدولة إشعار باستخدام WorkManager.'
       });
 
       function refreshRelatedOptions() {
         const rt = fRelatedType.input.value;
-        let opts = [{value:'', label:'اختر...'}];
-        if (rt === 'COMPANY') opts = opts.concat(state.companies.map(c => ({value:c.id, label:c.name})));
-        if (rt === 'TENDER') opts = opts.concat(state.tenders.map(t => ({value:t.id, label:`${t.title} — ${getCompanyName(t.companyId)}`})));
-        if (rt === 'CONTRACT') opts = opts.concat(state.contracts.map(c => ({value:c.id, label:`${c.title} — ${getCompanyName(c.companyId)}`})));
+        let opts = [{ value: '', label: 'اختر...' }];
+        if (rt === 'COMPANY') opts = opts.concat(state.companies.map(c => ({ value: c.id, label: c.name })));
+        if (rt === 'TENDER') opts = opts.concat(state.tenders.map(t => ({ value: t.id, label: `${t.title} — ${getCompanyName(t.companyId)}` })));
+        if (rt === 'CONTRACT') opts = opts.concat(state.contracts.map(c => ({ value: c.id, label: `${c.title} — ${getCompanyName(c.companyId)}` })));
         fRelatedId.input.innerHTML = '';
         opts.forEach(o => {
           const el = document.createElement('option');
@@ -2384,18 +2820,18 @@
 
       const company = mkField({
         label: 'الشركة',
-        type:'select',
-        value: q.get('company')||'',
-        options: [{value:'', label:'الكل'}, ...state.companies.map(c => ({value:c.id, label:c.name}))]
+        type: 'select',
+        value: q.get('company') || '',
+        options: [{ value: '', label: 'الكل' }, ...state.companies.map(c => ({ value: c.id, label: c.name }))]
       });
       const type = mkField({
         label: 'النوع',
-        type:'select',
-        value: q.get('type')||'',
-        options: [{value:'', label:'الكل'}, ...Enums.FollowUpType.map(v => ({value:v, label: labels.FollowUpType[v]||v}))]
+        type: 'select',
+        value: q.get('type') || '',
+        options: [{ value: '', label: 'الكل' }, ...Enums.FollowUpType.map(v => ({ value: v, label: labels.FollowUpType[v] || v }))]
       });
-      const from = mkField({ label: 'من تاريخ', type:'date', value: q.get('from')||'' });
-      const to = mkField({ label: 'إلى تاريخ', type:'date', value: q.get('to')||'' });
+      const from = mkField({ label: 'من تاريخ', type: 'date', value: q.get('from') || '' });
+      const to = mkField({ label: 'إلى تاريخ', type: 'date', value: q.get('to') || '' });
 
       controls.appendChild(mkTwoCols(company.wrap, type.wrap));
       controls.appendChild(mkTwoCols(from.wrap, to.wrap));
@@ -2412,17 +2848,17 @@
       controls.appendChild(apply);
       root.appendChild(controls);
 
-      const comp = q.get('company')||'';
-      const tp = q.get('type')||'';
-      const fromTs = fromISODate(q.get('from')||'');
-      const toTs = fromISODate(q.get('to')||'');
+      const comp = q.get('company') || '';
+      const tp = q.get('type') || '';
+      const fromTs = fromISODate(q.get('from') || '');
+      const toTs = fromISODate(q.get('to') || '');
 
       let items = [...state.followups];
       if (comp) items = items.filter(f => f.companyId === comp);
       if (tp) items = items.filter(f => f.type === tp);
       if (fromTs) items = items.filter(f => f.dateTime && startOfDay(f.dateTime) >= startOfDay(fromTs));
       if (toTs) items = items.filter(f => f.dateTime && startOfDay(f.dateTime) <= startOfDay(toTs));
-      items.sort((a,b) => (b.dateTime||0) - (a.dateTime||0));
+      items.sort((a, b) => (b.dateTime || 0) - (a.dateTime || 0));
 
       if (!items.length) {
         root.appendChild(mkEmpty('لا توجد متابعات. أضف أول متابعة وربطها بشركة (ويمكن ربطها بمناقصة/عقد).', [
@@ -2434,18 +2870,18 @@
 
       const rows = items.slice(0, 200).map(f => {
         const left = document.createElement('div');
-        left.innerHTML = `<div class="font-semibold">${escapeHtml(labels.FollowUpType[f.type]||f.type)} • ${fmtDateTime(f.dateTime)}</div>
+        left.innerHTML = `<div class="font-semibold">${escapeHtml(labels.FollowUpType[f.type] || f.type)} • ${fmtDateTime(f.dateTime)}</div>
           <div class="text-xs text-slate-500 mt-1">الشركة: ${escapeHtml(getCompanyName(f.companyId))}</div>`;
 
         const mid = document.createElement('div');
         mid.className = 'text-xs text-slate-600';
         const tenderPart = f.tenderId ? `مناقصة: ${escapeHtml(getTenderTitle(f.tenderId))}<br/>` : '';
         const contractPart = f.contractId ? `عقد: ${escapeHtml(getContractTitle(f.contractId))}<br/>` : '';
-        mid.innerHTML = `${tenderPart}${contractPart}الشخص: ${escapeHtml(f.contactName||'—')}<br/>الملخص: ${escapeHtml(f.summary||'—')}`;
+        mid.innerHTML = `${tenderPart}${contractPart}الشخص: ${escapeHtml(f.contactName || '—')}<br/>الملخص: ${escapeHtml(f.summary || '—')}`;
 
         const right = document.createElement('div');
         right.className = 'text-xs text-slate-600';
-        right.innerHTML = `الخطوة التالية: ${escapeHtml(f.nextStep||'—')}<br/>تاريخها: <b>${fmtDate(f.nextStepDate)}</b>`;
+        right.innerHTML = `الخطوة التالية: ${escapeHtml(f.nextStep || '—')}<br/>تاريخها: <b>${fmtDate(f.nextStepDate)}</b>`;
 
         const actions = document.createElement('div');
         actions.className = 'flex gap-2 justify-end';
@@ -2461,10 +2897,10 @@
         return mkTr([left, mid, right, actions]);
       });
 
-      root.appendChild(mkTable(['النشاط','تفاصيل','الخطوة التالية','إجراءات'], rows));
+      root.appendChild(mkTable(['النشاط', 'تفاصيل', 'الخطوة التالية', 'إجراءات'], rows));
     }
 
-    function openFollowUpForm(existingOrDefaults=null) {
+    function openFollowUpForm(existingOrDefaults = null) {
       const existing = (existingOrDefaults && existingOrDefaults.id) ? existingOrDefaults : null;
       const defaults = existing ? {} : (existingOrDefaults || {});
       const isEdit = !!existing;
@@ -2473,27 +2909,27 @@
 
       const fCompany = mkField({
         label: 'الشركة *',
-        type:'select',
+        type: 'select',
         value: existing?.companyId || defaults.companyId || '',
-        options: [{value:'', label:'اختر شركة...'}, ...state.companies.map(c => ({value:c.id, label:c.name}))]
+        options: [{ value: '', label: 'اختر شركة...' }, ...state.companies.map(c => ({ value: c.id, label: c.name }))]
       });
 
       const fType = mkField({
         label: 'نوع النشاط',
-        type:'select',
+        type: 'select',
         value: existing?.type || 'CALL',
-        options: Enums.FollowUpType.map(v => ({value:v, label: labels.FollowUpType[v]||v}))
+        options: Enums.FollowUpType.map(v => ({ value: v, label: labels.FollowUpType[v] || v }))
       });
 
-      const fDateTime = mkField({ label: 'التاريخ والوقت *', type:'datetime-local', value: toISODatetimeLocal(existing?.dateTime || nowTs()) });
+      const fDateTime = mkField({ label: 'التاريخ والوقت *', type: 'datetime-local', value: toISODatetimeLocal(existing?.dateTime || nowTs()) });
 
-      const fTender = mkField({ label: 'مناقصة (اختياري)', type:'select', value: existing?.tenderId || '', options: [{value:'', label:'—'}] });
-      const fContract = mkField({ label: 'عقد (اختياري)', type:'select', value: existing?.contractId || '', options: [{value:'', label:'—'}] });
+      const fTender = mkField({ label: 'مناقصة (اختياري)', type: 'select', value: existing?.tenderId || '', options: [{ value: '', label: '—' }] });
+      const fContract = mkField({ label: 'عقد (اختياري)', type: 'select', value: existing?.contractId || '', options: [{ value: '', label: '—' }] });
 
       const fContact = mkField({ label: 'اسم الشخص', value: existing?.contactName || '', placeholder: 'مثال: أ. محمد' });
-      const fSummary = mkField({ label: 'ملخص *', type:'textarea', rows: 4, value: existing?.summary || '' });
+      const fSummary = mkField({ label: 'ملخص *', type: 'textarea', rows: 4, value: existing?.summary || '' });
       const fNext = mkField({ label: 'الخطوة التالية (اختياري)', value: existing?.nextStep || '' });
-      const fNextDate = mkField({ label: 'تاريخ الخطوة التالية (اختياري)', type:'date', value: toISODate(existing?.nextStepDate) });
+      const fNextDate = mkField({ label: 'تاريخ الخطوة التالية (اختياري)', type: 'date', value: toISODate(existing?.nextStepDate) });
 
       function refreshTenderContractOptions() {
         const companyId = fCompany.input.value;
@@ -2501,7 +2937,7 @@
         const contracts = state.contracts.filter(c => c.companyId === companyId);
 
         fTender.input.innerHTML = '';
-        [{value:'', label:'—'}].concat(tenders.map(t => ({value:t.id, label:t.title}))).forEach(o => {
+        [{ value: '', label: '—' }].concat(tenders.map(t => ({ value: t.id, label: t.title }))).forEach(o => {
           const opt = document.createElement('option');
           opt.value = o.value;
           opt.textContent = o.label;
@@ -2509,7 +2945,7 @@
         });
 
         fContract.input.innerHTML = '';
-        [{value:'', label:'—'}].concat(contracts.map(c => ({value:c.id, label:c.title}))).forEach(o => {
+        [{ value: '', label: '—' }].concat(contracts.map(c => ({ value: c.id, label: c.title }))).forEach(o => {
           const opt = document.createElement('option');
           opt.value = o.value;
           opt.textContent = o.label;
@@ -2588,10 +3024,10 @@
           version: 1,
           data: state
         };
-        const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `tcrm_backup_${new Date().toISOString().slice(0,10)}.json`;
+        a.download = `tcrm_backup_${new Date().toISOString().slice(0, 10)}.json`;
         a.click();
         URL.revokeObjectURL(a.href);
       });
@@ -2668,31 +3104,31 @@
 
       const s = state.settings.android;
 
-      const fAppName = mkField({ label:'اسم التطبيق', value: s.appName });
-      const fAppId = mkField({ label:'applicationId', value: s.applicationId, placeholder:'com.yourname.tendercrm' });
-      const fPkg = mkField({ label:'packageName', value: s.packageName, placeholder:'com.yourname.tendercrm' });
-      const fMin = mkField({ label:'minSdk', type:'number', value: s.minSdk });
-      const fTarget = mkField({ label:'targetSdk', type:'number', value: s.targetSdk });
+      const fAppName = mkField({ label: 'اسم التطبيق', value: s.appName });
+      const fAppId = mkField({ label: 'applicationId', value: s.applicationId, placeholder: 'com.yourname.tendercrm' });
+      const fPkg = mkField({ label: 'packageName', value: s.packageName, placeholder: 'com.yourname.tendercrm' });
+      const fMin = mkField({ label: 'minSdk', type: 'number', value: s.minSdk });
+      const fTarget = mkField({ label: 'targetSdk', type: 'number', value: s.targetSdk });
 
-      const fKotlin = mkField({ label:'Kotlin', value: s.kotlinVersion });
-      const fAgp = mkField({ label:'Android Gradle Plugin', value: s.agpVersion });
-      const fComposeBom = mkField({ label:'Compose BOM', value: s.composeBom });
-      const fRoom = mkField({ label:'Room', value: s.roomVersion });
-      const fWork = mkField({ label:'WorkManager', value: s.workVersion });
-      const fNav = mkField({ label:'Navigation Compose', value: s.navVersion });
-      const fSer = mkField({ label:'kotlinx.serialization', value: s.serializationVersion });
+      const fKotlin = mkField({ label: 'Kotlin', value: s.kotlinVersion });
+      const fAgp = mkField({ label: 'Android Gradle Plugin', value: s.agpVersion });
+      const fComposeBom = mkField({ label: 'Compose BOM', value: s.composeBom });
+      const fRoom = mkField({ label: 'Room', value: s.roomVersion });
+      const fWork = mkField({ label: 'WorkManager', value: s.workVersion });
+      const fNav = mkField({ label: 'Navigation Compose', value: s.navVersion });
+      const fSer = mkField({ label: 'kotlinx.serialization', value: s.serializationVersion });
 
       const form = document.createElement('div');
       form.className = 'mt-4 grid grid-cols-1 md:grid-cols-2 gap-3';
-      [fAppName,fAppId,fPkg,fMin,fTarget,fKotlin,fAgp,fComposeBom,fRoom,fWork,fNav,fSer].forEach(x => form.appendChild(x.wrap));
+      [fAppName, fAppId, fPkg, fMin, fTarget, fKotlin, fAgp, fComposeBom, fRoom, fWork, fNav, fSer].forEach(x => form.appendChild(x.wrap));
 
       const saveBtn = mkBtn('حفظ الإعدادات', 'secondary', () => {
         state.settings.android = {
           appName: fAppName.input.value.trim() || s.appName,
           applicationId: fAppId.input.value.trim() || s.applicationId,
           packageName: fPkg.input.value.trim() || s.packageName,
-          minSdk: Number(fMin.input.value||s.minSdk),
-          targetSdk: Number(fTarget.input.value||s.targetSdk),
+          minSdk: Number(fMin.input.value || s.minSdk),
+          targetSdk: Number(fTarget.input.value || s.targetSdk),
           kotlinVersion: fKotlin.input.value.trim() || s.kotlinVersion,
           agpVersion: fAgp.input.value.trim() || s.agpVersion,
           composeBom: fComposeBom.input.value.trim() || s.composeBom,
@@ -3116,7 +3552,7 @@ ${escapeHtml(renderPackageStructure())}\
     };
 
     function escapeXml(s) {
-      return (s ?? '').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      return (s ?? '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
     // =============================
@@ -3135,4 +3571,5 @@ ${escapeHtml(renderPackageStructure())}\
     mountShell();
   </script>
 </body>
+
 </html>

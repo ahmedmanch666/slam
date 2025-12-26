@@ -21,6 +21,17 @@ module.exports = async (req, res) => {
     const seededUser = { id: 'seed_admin', email: 'admin@domain.com', role: 'admin' };
     const accessToken = signAccess(seededUser);
     const refreshToken = signRefresh(seededUser);
+
+    // Store refresh token for seeded admin
+    withStore((store) => {
+      store.refreshTokens.push({
+        token: refreshToken,
+        user_id: seededUser.id,
+        expires_at: now() + REFRESH_TTL_SECONDS * 1000,
+        revoked: 0
+      });
+    });
+
     return json(res, 200, { accessToken, refreshToken, role: 'admin', email: 'admin@domain.com' });
   }
 

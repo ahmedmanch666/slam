@@ -20,7 +20,7 @@ module.exports = async (req, res) => {
     if (exists) return { ok: false, code: 409, error: 'البريد مستخدم بالفعل' };
 
     const isFirstUser = store.users.length === 0;
-    const id = globalThis.crypto?.randomUUID?.() || crypto.randomUUID();
+    const id = crypto.randomUUID();
     const role = isFirstUser ? 'admin' : 'user';
 
     store.users.push({
