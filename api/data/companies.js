@@ -49,9 +49,9 @@ module.exports = async (req, res) => {
             }
 
             await db.execute({
-                sql: `INSERT OR REPLACE INTO companies (id, user_id, name, phone, email, address, notes, created_at) 
-                      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                args: [id, userId, name, phone || phone1 || null, email || null, address || null, notes || null, Date.now()]
+                sql: `INSERT OR REPLACE INTO companies (id, user_id, name, phone, phone2, email, address, notes, sector, created_at) 
+                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                args: [id, userId, name, phone || phone1 || null, phone2 || null, email || null, address || null, notes || null, sector || null, Date.now()]
             });
 
             return json(res, 201, { success: true, id });
@@ -67,9 +67,9 @@ module.exports = async (req, res) => {
             }
 
             await db.execute({
-                sql: `UPDATE companies SET name = ?, phone = ?, email = ?, address = ?, notes = ?, updated_at = ? 
+                sql: `UPDATE companies SET name = ?, phone = ?, phone2 = ?, email = ?, address = ?, notes = ?, sector = ?, updated_at = ? 
                       WHERE id = ? AND user_id = ?`,
-                args: [name, phone || null, email || null, address || null, notes || null, Date.now(), id, userId]
+                args: [name, phone || phone1 || null, phone2 || null, email || null, address || null, notes || null, sector || null, Date.now(), id, userId]
             });
 
             return json(res, 200, { success: true });

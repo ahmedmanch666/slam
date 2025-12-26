@@ -89,10 +89,15 @@ export function DataProvider({ children }) {
                         : [...prev[type], item]
                 }));
                 return true;
+            } else {
+                const errorData = await res.json().catch(() => ({}));
+                console.error(`Failed to save ${type}:`, res.status, errorData);
+                alert(`فشل الحفظ: ${errorData.error || 'خطأ غير معروف'} (${res.status})`);
+                return false;
             }
-            return false;
         } catch (err) {
             console.error(`Failed to save ${type}:`, err);
+            alert(`فشل الاتصال بالسيرفر: ${err.message}`);
             return false;
         }
     };
