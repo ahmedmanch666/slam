@@ -4,6 +4,8 @@ import { DataProvider } from './context/DataContext';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import Companies from './pages/Companies';
+import Tenders from './pages/Tenders';
+import TenderDetails from './pages/TenderDetails';
 import './index.css';
 
 function ProtectedRoute({ children }) {
@@ -47,7 +49,12 @@ function AppRoutes() {
       } />
       <Route path="/tenders" element={
         <ProtectedRoute>
-          <Home />
+          <Tenders />
+        </ProtectedRoute>
+      } />
+      <Route path="/tenders/:id" element={
+        <ProtectedRoute>
+          <TenderDetails />
         </ProtectedRoute>
       } />
       <Route path="/contracts" element={
