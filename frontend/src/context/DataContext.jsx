@@ -141,7 +141,8 @@ function convertFromServer(type, item) {
 
     if (type === 'companies') {
         result.name = item.name;
-        result.phone1 = item.phone;
+        result.phone1 = item.phone || item.phone1;
+        result.phone2 = item.phone2;
         result.email = item.email;
         result.address = item.address;
         result.notes = item.notes;
@@ -196,6 +197,8 @@ function convertToServer(type, item) {
     if (type === 'companies') {
         result.name = item.name;
         result.phone = item.phone1;
+        result.phone1 = item.phone1;
+        result.phone2 = item.phone2;
         result.email = item.email;
         result.address = item.address;
         result.notes = item.notes;

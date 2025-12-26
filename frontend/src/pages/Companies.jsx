@@ -117,8 +117,12 @@ export default function Companies() {
                         company={editingCompany}
                         onClose={() => setShowForm(false)}
                         onSave={async (companyData) => {
-                            await saveItem('companies', companyData);
-                            setShowForm(false);
+                            const success = await saveItem('companies', companyData);
+                            if (success) {
+                                setShowForm(false);
+                            } else {
+                                alert('فشل حفظ الشركة. يرجى المحاولة مرة أخرى.');
+                            }
                         }}
                     />
                 )}
