@@ -45,10 +45,10 @@ export default function TenderDetails() {
 
             // Parallel fetch
             const [iRes, cRes, aRes, invRes] = await Promise.all([
-                fetch(`/api/data/tender_items?tender_id=${tenderId}`, { headers }),
-                fetch(`/api/data/tender_competitors?tender_id=${tenderId}`, { headers }),
-                fetch(`/api/data/tender_attachments?tender_id=${tenderId}`, { headers }),
-                fetch(`/api/data/invoices?tender_id=${tenderId}`, { headers })
+                fetch(`/api/data?type=tender_items&tender_id=${tenderId}`, { headers }),
+                fetch(`/api/data?type=tender_competitors&tender_id=${tenderId}`, { headers }),
+                fetch(`/api/data?type=tender_attachments&tender_id=${tenderId}`, { headers }),
+                fetch(`/api/data?type=invoices&tender_id=${tenderId}`, { headers })
             ]);
 
             const [iData, cData, aData, invData] = await Promise.all([
@@ -240,7 +240,7 @@ function ItemsTab({ items, tenderId, refresh }) {
     const handleDelete = async (id) => {
         if (!confirm('هل أنت متأكد من حذف هذا الصنف؟')) return;
         try {
-            await fetch('/api/data/tender_items', {
+            await fetch('/api/data?type=tender_items', {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${auth.accessToken}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id })
@@ -338,7 +338,7 @@ function ItemModal({ tenderId, item, onClose, onSave }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await fetch('/api/data/tender_items', {
+            await fetch('/api/data?type=tender_items', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${auth.accessToken}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify(form)
@@ -512,7 +512,7 @@ function CompetitorsTab({ competitors, tenderId, refresh }) {
     const handleDelete = async (id) => {
         if (!confirm('حذف هذا المنافس؟')) return;
         try {
-            await fetch('/api/data/tender_competitors', {
+            await fetch('/api/data?type=tender_competitors', {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${auth.accessToken}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id })
@@ -588,7 +588,7 @@ function CompetitorModal({ tenderId, comp, onClose, onSave }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await fetch('/api/data/tender_competitors', {
+            await fetch('/api/data?type=tender_competitors', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${auth.accessToken}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify(form)
@@ -638,7 +638,7 @@ function AttachmentsTab({ attachments, tenderId, refresh }) {
         if (!url) return;
         setUploading(true);
         try {
-            await fetch('/api/data/tender_attachments', {
+            await fetch('/api/data?type=tender_attachments', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${auth.accessToken}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -658,7 +658,7 @@ function AttachmentsTab({ attachments, tenderId, refresh }) {
     const handleDelete = async (id) => {
         if (!confirm('حذف هذه الصورة؟')) return;
         try {
-            await fetch('/api/data/tender_attachments', {
+            await fetch('/api/data?type=tender_attachments', {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${auth.accessToken}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id })
@@ -706,7 +706,7 @@ function InvoicesTab({ invoices, tenderId, refresh }) {
     const handleDelete = async (id) => {
         if (!confirm('حذف هذه الفاتورة؟')) return;
         try {
-            await fetch('/api/data/invoices', {
+            await fetch('/api/data?type=invoices', {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${auth.accessToken}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id })
@@ -780,7 +780,7 @@ function InvoiceModal({ tenderId, onClose, onSave }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await fetch('/api/data/invoices', {
+            await fetch('/api/data?type=invoices', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${auth.accessToken}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({

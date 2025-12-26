@@ -27,7 +27,7 @@ export function DataProvider({ children }) {
             const types = ['companies', 'tenders', 'contracts', 'tasks', 'contacts', 'followups'];
             const results = await Promise.all(
                 types.map(async (type) => {
-                    const res = await apiFetch(`/api/data/${type}`);
+                    const res = await apiFetch(`/api/data?type=${type}`);
                     if (res.ok) {
                         const json = await res.json();
                         return { type, items: json[type] || [] };
@@ -74,7 +74,7 @@ export function DataProvider({ children }) {
 
         try {
             const serverData = convertToServer(type, item);
-            const res = await apiFetch(`/api/data/${type}`, {
+            const res = await apiFetch(`/api/data?type=${type}`, {
                 method: 'POST',
                 body: JSON.stringify(serverData)
             });
@@ -109,7 +109,7 @@ export function DataProvider({ children }) {
         if (!auth?.accessToken) return false;
 
         try {
-            const res = await apiFetch(`/api/data/${type}`, {
+            const res = await apiFetch(`/api/data?type=${type}`, {
                 method: 'DELETE',
                 body: JSON.stringify({ id })
             });
