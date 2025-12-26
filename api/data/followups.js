@@ -39,9 +39,9 @@ module.exports = async (req, res) => {
             if (!id) return json(res, 400, { error: 'ID مطلوب' });
 
             await db.execute({
-                sql: `INSERT INTO followups (id, user_id, related_type, related_id, type, date, notes) 
-                      VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                args: [id, userId, related_type || null, related_id || null, type || null, date || null, notes || null]
+                sql: `INSERT OR REPLACE INTO followups (id, user_id, related_type, related_id, type, date, notes, created_at) 
+                      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                args: [id, userId, related_type || null, related_id || null, type || null, date || null, notes || null, Date.now()]
             });
 
             return json(res, 201, { success: true, id });

@@ -39,9 +39,9 @@ module.exports = async (req, res) => {
             if (!id || !title) return json(res, 400, { error: 'العنوان مطلوب' });
 
             await db.execute({
-                sql: `INSERT INTO tenders (id, user_id, company_id, title, type, status, value, submission_date, notes) 
-                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                args: [id, userId, company_id || null, title, type || null, status || null, value || null, submission_date || null, notes || null]
+                sql: `INSERT OR REPLACE INTO tenders (id, user_id, company_id, title, type, status, value, submission_date, notes, created_at) 
+                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                args: [id, userId, company_id || null, title, type || null, status || null, value || null, submission_date || null, notes || null, Date.now()]
             });
 
             return json(res, 201, { success: true, id });

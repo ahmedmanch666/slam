@@ -39,9 +39,9 @@ module.exports = async (req, res) => {
             if (!id || !name) return json(res, 400, { error: 'الاسم مطلوب' });
 
             await db.execute({
-                sql: `INSERT INTO contacts (id, user_id, company_id, name, position, phone, email, notes) 
-                      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                args: [id, userId, company_id || null, name, position || null, phone || null, email || null, notes || null]
+                sql: `INSERT OR REPLACE INTO contacts (id, user_id, company_id, name, position, phone, email, notes, created_at) 
+                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                args: [id, userId, company_id || null, name, position || null, phone || null, email || null, notes || null, Date.now()]
             });
 
             return json(res, 201, { success: true, id });

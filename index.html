@@ -692,10 +692,13 @@
 
       if (type === 'companies') {
         result.name = item.name;
-        result.phone = item.phone;
+        result.phone = item.phone1 || item.phone;
+        result.phone1 = item.phone1;
+        result.phone2 = item.phone2;
         result.email = item.email;
         result.address = item.address;
         result.notes = item.notes;
+        result.sector = item.sector;
       } else if (type === 'tenders') {
         result.company_id = item.companyId;
         result.title = item.title;

@@ -39,19 +39,19 @@ module.exports = async (req, res) => {
             return json(res, 200, { companies: result.rows });
         }
 
-        // POST - Create new company
+        // POST - Create or update company (UPSERT)
         if (req.method === 'POST') {
             const body = await parseBody(req);
-            const { id, name, phone, email, address, notes } = body;
+            const { id, name, phone, phone1, phone2, email, address, notes, sector } = body;
 
             if (!id || !name) {
                 return json(res, 400, { error: 'الاسم مطلوب' });
             }
 
             await db.execute({
-                sql: `INSERT INTO companies (id, user_id, name, phone, email, address, notes) 
-                      VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                args: [id, userId, name, phone || null, email || null, address || null, notes || null]
+                sql: `INSERT OR REPLACE INTO companies (id, user_id, name, phone, email, address, notes, created_at) 
+                      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                args: [id, userId, name, phone || phone1 || null, email || null, address || null, notes || null, Date.now()]
             });
 
             return json(res, 201, { success: true, id });
