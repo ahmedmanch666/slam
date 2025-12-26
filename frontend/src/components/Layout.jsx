@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import GlobalSearch from './GlobalSearch';
 
 const navItems = [
     { path: '/', label: 'الرئيسية', icon: '🏠' },
@@ -13,6 +15,7 @@ export default function Layout({ children }) {
     const location = useLocation();
     const navigate = useNavigate();
     const { auth, logout } = useAuth();
+    const [showSearch, setShowSearch] = useState(false);
 
     const handleLogout = async () => {
         await logout();
@@ -32,6 +35,16 @@ export default function Layout({ children }) {
                         <span className="text-lg font-bold text-slate-900">مدير المناقصات</span>
                     </div>
 
+                    {/* Search Button */}
+                    <button
+                        onClick={() => setShowSearch(true)}
+                        className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 transition mb-2"
+                    >
+                        <span>🔍</span>
+                        <span className="text-sm">بحث سريع...</span>
+                        <span className="mr-auto text-xs bg-slate-200 px-2 py-0.5 rounded">Ctrl+K</span>
+                    </button>
+
                     {/* Nav */}
                     <nav className="flex flex-1 flex-col">
                         <ul className="flex flex-1 flex-col gap-y-2">
@@ -40,8 +53,8 @@ export default function Layout({ children }) {
                                     <Link
                                         to={item.path}
                                         className={`group flex gap-x-3 rounded-xl p-3 text-sm font-semibold leading-6 transition ${location.pathname === item.path
-                                                ? 'bg-indigo-50 text-indigo-600'
-                                                : 'text-slate-700 hover:text-indigo-600 hover:bg-slate-50'
+                                            ? 'bg-indigo-50 text-indigo-600'
+                                            : 'text-slate-700 hover:text-indigo-600 hover:bg-slate-50'
                                             }`}
                                     >
                                         <span className="text-lg">{item.icon}</span>
@@ -94,8 +107,8 @@ export default function Layout({ children }) {
                             key={item.path}
                             to={item.path}
                             className={`flex flex-col items-center p-2 rounded-xl transition ${location.pathname === item.path
-                                    ? 'text-indigo-600'
-                                    : 'text-slate-500 hover:text-indigo-600'
+                                ? 'text-indigo-600'
+                                : 'text-slate-500 hover:text-indigo-600'
                                 }`}
                         >
                             <span className="text-xl">{item.icon}</span>
@@ -111,6 +124,9 @@ export default function Layout({ children }) {
                     </button>
                 </div>
             </nav>
+
+            {/* Global Search Modal */}
+            {showSearch && <GlobalSearch onClose={() => setShowSearch(false)} />}
         </div>
     );
 }
