@@ -24,10 +24,26 @@ function verifyRefresh(token) {
   return jwt.verify(token, secret);
 }
 
+function verifyAccess(token) {
+  const secret = mustEnv('JWT_ACCESS_SECRET');
+  return jwt.verify(token, secret);
+}
+
+function verifyToken(token, type = 'access') {
+  try {
+    if (type === 'refresh') return verifyRefresh(token);
+    return verifyAccess(token);
+  } catch (e) {
+    return null; // Return null on failure as expected by the consumer code
+  }
+}
+
 module.exports = {
   ACCESS_TTL_SECONDS,
   REFRESH_TTL_SECONDS,
   signAccess,
   signRefresh,
-  verifyRefresh
+  verifyRefresh,
+  verifyAccess,
+  verifyToken // Added this export
 };
