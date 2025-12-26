@@ -1,4 +1,4 @@
-const { initDb, getDb } = require('../_lib/db');
+const { initDb, getDb } = require('./_lib/db');
 const { json } = require('../_lib/http');
 
 module.exports = async (req, res) => {
