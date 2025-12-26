@@ -92,7 +92,9 @@ export function DataProvider({ children }) {
             } else {
                 const errorData = await res.json().catch(() => ({}));
                 console.error(`Failed to save ${type}:`, res.status, errorData);
-                alert(`فشل الحفظ: ${errorData.error || 'خطأ غير معروف'} (${res.status})`);
+                const errorMsg = errorData.error || 'خطأ غير معروف';
+                const details = errorData.details ? `\nالتفاصيل: ${errorData.details}` : '';
+                alert(`فشل الحفظ: ${errorMsg} (${res.status})${details}`);
                 return false;
             }
         } catch (err) {
