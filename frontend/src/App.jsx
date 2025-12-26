@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import Companies from './pages/Companies';
 import Tenders from './pages/Tenders';
 import TenderDetails from './pages/TenderDetails';
+import Contracts from './pages/Contracts';
 import './index.css';
 
 function ProtectedRoute({ children }) {
@@ -59,7 +60,7 @@ function AppRoutes() {
       } />
       <Route path="/contracts" element={
         <ProtectedRoute>
-          <Home />
+          <Contracts />
         </ProtectedRoute>
       } />
       <Route path="/tasks" element={
