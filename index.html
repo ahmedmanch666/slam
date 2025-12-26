@@ -485,8 +485,6 @@
       st.meta.lastSavedAt = nowTs();
       localStorage.setItem(STORE_KEY, JSON.stringify(st));
       renderShellMeta();
-      // Debounced sync to server
-      scheduleSyncToServer();
     }
 
     let syncTimeout = null;
@@ -3829,6 +3827,18 @@ ${escapeHtml(renderPackageStructure())}\
       const idx = state[collection].findIndex(x => x.id === obj.id);
       if (idx >= 0) state[collection][idx] = obj;
       else state[collection].push(obj);
+
+      // Immediately save to server
+      if (authState?.accessToken) {
+        const serverData = convertToServerFormat(collection, obj);
+        apiFetch(`/api/data/${collection}`, {
+          method: 'POST',
+          body: JSON.stringify(serverData)
+        }).then(res => {
+          if (res.ok) console.log(`Saved ${collection} to server:`, obj.id);
+          else console.error(`Failed to save ${collection}:`, res.status);
+        }).catch(err => console.error(`Error saving ${collection}:`, err));
+      }
     }
 
     // =============================
