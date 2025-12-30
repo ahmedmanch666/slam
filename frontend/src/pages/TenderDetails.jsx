@@ -688,7 +688,16 @@ function AttachmentsTab({ attachments, tenderId, refresh }) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {attachments.map(att => (
                     <div key={att.id} className="group relative bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition">
-                        <img src={att.url} alt="attachment" className="w-full h-40 object-cover" onError={(e) => e.target.src = 'https://via.placeholder.com/150?text=Error'} />
+                        <img
+                            src={att.url}
+                            alt="attachment"
+                            className="w-full h-40 object-cover bg-slate-100"
+                            onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpolyline points='21 15 16 10 5 21'/%3E%3C/svg%3E";
+                                e.target.className = "w-full h-40 object-contain p-8 bg-slate-50";
+                            }}
+                        />
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
                             <a href={att.url} target="_blank" rel="noopener noreferrer" className="bg-white/20 text-white p-2 rounded-full hover:bg-white/40">👁️</a>
                             <button onClick={() => handleDelete(att.id)} className="bg-red-500/80 text-white p-2 rounded-full hover:bg-red-600">🗑️</button>
