@@ -48,20 +48,26 @@ export default function Layout({ children }) {
                     {/* Nav */}
                     <nav className="flex flex-1 flex-col">
                         <ul className="flex flex-1 flex-col gap-y-2">
-                            {navItems.map((item) => (
-                                <li key={item.path}>
-                                    <Link
-                                        to={item.path}
-                                        className={`group flex gap-x-3 rounded-xl p-3 text-sm font-semibold leading-6 transition ${location.pathname === item.path
-                                            ? 'bg-indigo-50 text-indigo-600'
-                                            : 'text-slate-700 hover:text-indigo-600 hover:bg-slate-50'
-                                            }`}
-                                    >
-                                        <span className="text-lg">{item.icon}</span>
-                                        {item.label}
-                                    </Link>
-                                </li>
-                            ))}
+                            {navItems.map((item) => {
+                                const isActive = item.path === '/'
+                                    ? location.pathname === '/'
+                                    : location.pathname.startsWith(item.path);
+
+                                return (
+                                    <li key={item.path}>
+                                        <Link
+                                            to={item.path}
+                                            className={`group flex gap-x-3 rounded-xl p-3 text-sm font-semibold leading-6 transition ${isActive
+                                                ? 'bg-indigo-50 text-indigo-600'
+                                                : 'text-slate-700 hover:text-indigo-600 hover:bg-slate-50'
+                                                }`}
+                                        >
+                                            <span className="text-lg">{item.icon}</span>
+                                            {item.label}
+                                        </Link>
+                                    </li>
+                                );
+                            })}
                         </ul>
 
                         {/* User */}
@@ -102,19 +108,25 @@ export default function Layout({ children }) {
             {/* Bottom Nav - Mobile */}
             <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 pb-safe">
                 <div className="flex justify-around py-2">
-                    {navItems.slice(0, 4).map((item) => (
-                        <Link
-                            key={item.path}
-                            to={item.path}
-                            className={`flex flex-col items-center p-2 rounded-xl transition ${location.pathname === item.path
-                                ? 'text-indigo-600'
-                                : 'text-slate-500 hover:text-indigo-600'
-                                }`}
-                        >
-                            <span className="text-xl">{item.icon}</span>
-                            <span className="text-xs mt-1">{item.label}</span>
-                        </Link>
-                    ))}
+                    {navItems.slice(0, 4).map((item) => {
+                        const isActive = item.path === '/'
+                            ? location.pathname === '/'
+                            : location.pathname.startsWith(item.path);
+
+                        return (
+                            <Link
+                                key={item.path}
+                                to={item.path}
+                                className={`flex flex-col items-center p-2 rounded-xl transition ${isActive
+                                    ? 'text-indigo-600'
+                                    : 'text-slate-500 hover:text-indigo-600'
+                                    }`}
+                            >
+                                <span className="text-xl">{item.icon}</span>
+                                <span className="text-xs mt-1">{item.label}</span>
+                            </Link>
+                        );
+                    })}
                     <button
                         onClick={handleLogout}
                         className="flex flex-col items-center p-2 rounded-xl text-red-500"

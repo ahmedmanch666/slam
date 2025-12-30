@@ -83,7 +83,7 @@ export default function TenderDetails() {
                             <h1 className="text-2xl font-bold text-slate-900">{tender.title}</h1>
                         </div>
                         <p className="text-slate-500 mt-1 mr-8">
-                            {globalData.companies.find(c => c.id === tender.companyId)?.name || 'شركة غير محددة'}
+                            🏢 {globalData.companies.find(c => c.id === tender.companyId)?.name || 'شركة غير محددة'}
                         </p>
                     </div>
                     <div className="flex gap-2">

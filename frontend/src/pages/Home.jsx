@@ -133,6 +133,50 @@ export default function Home() {
                         </Link>
                     </div>
                 </div>
+
+                {/* Recent Tenders */}
+                {data.tenders.length > 0 && (
+                    <div className="bg-white rounded-2xl p-5 border border-slate-200">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-lg font-bold text-slate-900">📋 آخر المناقصات</h2>
+                            <Link to="/tenders" className="text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                                عرض الكل ←
+                            </Link>
+                        </div>
+                        <div className="space-y-3">
+                            {data.tenders.slice(0, 5).map((tender) => {
+                                const company = data.companies.find(c => c.id === tender.companyId);
+                                return (
+                                    <Link
+                                        key={tender.id}
+                                        to={`/tenders/${tender.id}`}
+                                        className="flex items-center justify-between p-4 rounded-xl bg-slate-50 hover:bg-indigo-50 border border-slate-100 hover:border-indigo-200 transition group"
+                                    >
+                                        <div className="flex-1">
+                                            <div className="font-semibold text-slate-900 group-hover:text-indigo-700">{tender.title}</div>
+                                            <div className="text-sm text-slate-500 mt-1">
+                                                🏢 {company?.name || 'غير محدد'}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${tender.status === 'WON' ? 'bg-green-100 text-green-700' :
+                                                    tender.status === 'LOST' ? 'bg-red-100 text-red-700' :
+                                                        tender.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
+                                                            'bg-slate-100 text-slate-600'
+                                                }`}>
+                                                {tender.status === 'WON' ? 'فائز' :
+                                                    tender.status === 'LOST' ? 'خاسر' :
+                                                        tender.status === 'PENDING' ? 'قيد الانتظار' :
+                                                            tender.status === 'DRAFT' ? 'مسودة' : tender.status}
+                                            </span>
+                                            <span className="text-indigo-500 group-hover:translate-x-[-4px] transition-transform">←</span>
+                                        </div>
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </div>
         </Layout>
     );
