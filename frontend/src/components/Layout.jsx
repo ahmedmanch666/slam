@@ -108,7 +108,7 @@ export default function Layout({ children }) {
             {/* Bottom Nav - Mobile */}
             <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 pb-safe">
                 <div className="flex justify-around py-2">
-                    {navItems.slice(0, 4).map((item) => {
+                    {navItems.map((item) => {
                         const isActive = item.path === '/'
                             ? location.pathname === '/'
                             : location.pathname.startsWith(item.path);
@@ -117,23 +117,16 @@ export default function Layout({ children }) {
                             <Link
                                 key={item.path}
                                 to={item.path}
-                                className={`flex flex-col items-center p-2 rounded-xl transition ${isActive
+                                className={`flex flex-col items-center p-1.5 rounded-xl transition ${isActive
                                     ? 'text-indigo-600'
                                     : 'text-slate-500 hover:text-indigo-600'
                                     }`}
                             >
-                                <span className="text-xl">{item.icon}</span>
-                                <span className="text-xs mt-1">{item.label}</span>
+                                <span className="text-lg">{item.icon}</span>
+                                <span className="text-[10px] mt-0.5">{item.label}</span>
                             </Link>
                         );
                     })}
-                    <button
-                        onClick={handleLogout}
-                        className="flex flex-col items-center p-2 rounded-xl text-red-500"
-                    >
-                        <span className="text-xl">↩️</span>
-                        <span className="text-xs mt-1">خروج</span>
-                    </button>
                 </div>
             </nav>
 

@@ -122,10 +122,10 @@ export default function Tasks() {
                 ) : (
                     <div className="grid gap-4">
                         {filteredItems.map(item => (
-                            <div key={item.id} className={`bg-white rounded-2xl p-5 border transition hover:shadow-lg ${item.status === 'completed' ? 'border-green-200 bg-green-50/50' : 'border-slate-200'}`}>
-                                <div className="flex items-start justify-between">
+                            <div key={item.id} className={`bg-white rounded-2xl p-4 sm:p-5 border transition hover:shadow-lg ${item.status === 'completed' ? 'border-green-200 bg-green-50/50' : 'border-slate-200'}`}>
+                                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                                     <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-2">
+                                        <div className="flex items-center gap-2 mb-2 flex-wrap">
                                             {item.priority && (
                                                 <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${getPriorityColor(item.priority)}`}>
                                                     {getPriorityLabel(item.priority)}
@@ -153,9 +153,25 @@ export default function Tasks() {
                                             </div>
                                         )}
                                     </div>
-                                    <div className="flex gap-2 mr-4">
-                                        <button onClick={() => handleEdit(item)} className="px-3 py-1 rounded-lg bg-slate-100 text-slate-700 text-sm hover:bg-slate-200 transition">تعديل</button>
-                                        <button onClick={() => handleDelete(item)} className="px-3 py-1 rounded-lg bg-red-100 text-red-700 text-sm hover:bg-red-200 transition">حذف</button>
+                                    <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+                                        <button
+                                            onClick={() => handleEdit(item)}
+                                            className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-green-100 text-green-700 text-sm font-medium hover:bg-green-200 transition"
+                                        >
+                                            🔓 Open
+                                        </button>
+                                        <button
+                                            onClick={() => handleEdit(item)}
+                                            className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm hover:bg-slate-200 transition"
+                                        >
+                                            تعديل
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(item)}
+                                            className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-red-100 text-red-700 text-sm hover:bg-red-200 transition"
+                                        >
+                                            حذف
+                                        </button>
                                     </div>
                                 </div>
                             </div>
