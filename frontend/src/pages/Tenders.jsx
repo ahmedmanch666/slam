@@ -133,9 +133,9 @@ export default function Tenders() {
                                     <div className="flex gap-2 flex-wrap sm:flex-nowrap">
                                         <Link
                                             to={`/tenders/${tender.id}`}
-                                            className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-indigo-100 text-indigo-700 text-sm font-medium hover:bg-indigo-200 transition text-center"
+                                            className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-green-100 text-green-700 text-sm font-medium hover:bg-green-200 transition text-center"
                                         >
-                                            📋 التفاصيل
+                                            🔓 Open
                                         </Link>
                                         <button
                                             onClick={() => handleEdit(tender)}
