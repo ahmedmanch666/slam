@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import Layout from '../components/Layout';
 
@@ -7,6 +8,16 @@ export default function Tasks() {
     const [search, setSearch] = useState('');
     const [showForm, setShowForm] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // Auto-open add modal when ?add=true query param is present
+    useEffect(() => {
+        if (searchParams.get('add') === 'true') {
+            setEditingItem(null);
+            setShowForm(true);
+            setSearchParams({});
+        }
+    }, [searchParams, setSearchParams]);
 
     const getRelatedName = (type, id) => {
         if (type === 'tender' && id) {

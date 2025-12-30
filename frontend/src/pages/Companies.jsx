@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import Layout from '../components/Layout';
 
@@ -8,6 +8,16 @@ export default function Companies() {
     const [search, setSearch] = useState('');
     const [showForm, setShowForm] = useState(false);
     const [editingCompany, setEditingCompany] = useState(null);
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // Auto-open add modal when ?add=true query param is present
+    useEffect(() => {
+        if (searchParams.get('add') === 'true') {
+            setEditingCompany(null);
+            setShowForm(true);
+            setSearchParams({});
+        }
+    }, [searchParams, setSearchParams]);
 
     const filteredCompanies = data.companies.filter(c =>
         c.name?.toLowerCase().includes(search.toLowerCase()) ||
