@@ -74,22 +74,24 @@ export default function TenderDetails() {
         <Layout>
             <div className="space-y-6">
                 {/* Header */}
-                <div className="flex items-center justify-between bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                    <div>
-                        <div className="flex items-center gap-3">
-                            <button onClick={() => navigate('/tenders')} className="text-slate-400 hover:text-indigo-600 transition">
-                                ➡️ عودة
-                            </button>
-                            <h1 className="text-2xl font-bold text-slate-900">{tender.title}</h1>
+                <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                                <button onClick={() => navigate('/tenders')} className="text-indigo-600 hover:text-indigo-800 transition text-sm font-medium">
+                                    ← عودة للمناقصات
+                                </button>
+                            </div>
+                            <h1 className="text-xl sm:text-2xl font-bold text-slate-900">{tender.title}</h1>
+                            <p className="text-slate-500 mt-1 text-sm sm:text-base">
+                                🏢 {globalData.companies.find(c => c.id === tender.companyId)?.name || 'شركة غير محددة'}
+                            </p>
                         </div>
-                        <p className="text-slate-500 mt-1 mr-8">
-                            🏢 {globalData.companies.find(c => c.id === tender.companyId)?.name || 'شركة غير محددة'}
-                        </p>
-                    </div>
-                    <div className="flex gap-2">
-                        <button className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-medium hover:bg-slate-200">
-                            🖨️ طباعة تقرير
-                        </button>
+                        <div className="flex gap-2">
+                            <button className="flex-1 sm:flex-none px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-medium hover:bg-slate-200 text-sm">
+                                🖨️ طباعة
+                            </button>
+                        </div>
                     </div>
                 </div>
 

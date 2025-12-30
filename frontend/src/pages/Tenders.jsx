@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import Layout from '../components/Layout';
 
@@ -102,12 +103,17 @@ export default function Tenders() {
                         {filteredTenders.map((tender) => (
                             <div
                                 key={tender.id}
-                                className="bg-white rounded-2xl p-5 border border-slate-200 hover:shadow-lg transition"
+                                className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:shadow-lg transition"
                             >
-                                <div className="flex items-start justify-between">
+                                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                                     <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <h3 className="text-lg font-bold text-slate-900">{tender.title}</h3>
+                                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                            <Link
+                                                to={`/tenders/${tender.id}`}
+                                                className="text-lg font-bold text-slate-900 hover:text-indigo-600 transition"
+                                            >
+                                                {tender.title}
+                                            </Link>
                                             <span className={`px-2 py-0.5 rounded-md text-xs font-medium ${getStatusColor(tender.status)}`}>
                                                 {getStatusLabel(tender.status)}
                                             </span>
@@ -115,7 +121,7 @@ export default function Tenders() {
                                         <p className="text-sm text-slate-600 mb-2">
                                             🏢 {getCompanyName(tender.companyId)}
                                         </p>
-                                        <div className="flex flex-wrap gap-4 text-sm text-slate-500">
+                                        <div className="flex flex-wrap gap-3 text-sm text-slate-500">
                                             {tender.value && (
                                                 <span>💰 {Number(tender.value).toLocaleString()} ر.س</span>
                                             )}
@@ -124,16 +130,22 @@ export default function Tenders() {
                                             )}
                                         </div>
                                     </div>
-                                    <div className="flex gap-2 mr-4">
+                                    <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+                                        <Link
+                                            to={`/tenders/${tender.id}`}
+                                            className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-indigo-100 text-indigo-700 text-sm font-medium hover:bg-indigo-200 transition text-center"
+                                        >
+                                            📋 التفاصيل
+                                        </Link>
                                         <button
                                             onClick={() => handleEdit(tender)}
-                                            className="px-3 py-1 rounded-lg bg-slate-100 text-slate-700 text-sm hover:bg-slate-200 transition"
+                                            className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm hover:bg-slate-200 transition"
                                         >
                                             تعديل
                                         </button>
                                         <button
                                             onClick={() => handleDelete(tender)}
-                                            className="px-3 py-1 rounded-lg bg-red-100 text-red-700 text-sm hover:bg-red-200 transition"
+                                            className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-red-100 text-red-700 text-sm hover:bg-red-200 transition"
                                         >
                                             حذف
                                         </button>
