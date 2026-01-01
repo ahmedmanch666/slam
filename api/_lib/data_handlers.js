@@ -280,9 +280,19 @@ const handlers = {
         }
         if (method === 'DELETE') {
             const deleteId = body.id || query.id;
-            if (!deleteId) return { status: 400, data: { error: 'Missing ID' } };
-            await db.execute({ sql: 'DELETE FROM tender_attachments WHERE id = ?', args: [deleteId] });
-            return { status: 200, data: { success: true } };
+            console.log('[tender_attachments DELETE] Received request:', { bodyId: body.id, queryId: query.id, deleteId });
+            if (!deleteId) {
+                console.log('[tender_attachments DELETE] ERROR: Missing ID');
+                return { status: 400, data: { error: 'Missing ID' } };
+            }
+            try {
+                const result = await db.execute({ sql: 'DELETE FROM tender_attachments WHERE id = ?', args: [deleteId] });
+                console.log('[tender_attachments DELETE] DB Result:', result);
+                return { status: 200, data: { success: true, deletedId: deleteId } };
+            } catch (dbErr) {
+                console.error('[tender_attachments DELETE] DB Error:', dbErr);
+                return { status: 500, data: { error: 'Database error', details: dbErr.message } };
+            }
         }
     },
 

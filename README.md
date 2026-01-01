@@ -1,116 +1,155 @@
-# نظام مدير المناقصات (Tender Manager System)
+# نظام مدير المناقصات (SLAM - Tender Manager System)
 
-## 📌 Project Overview
+## 📌 نظرة عامة
 
-**Tender Manager** is a comprehensive web application designed to streamline the management of tenders, contracts, companies, and related tasks. Built with a focus on usability and Arabic language support (RTL), it provides a centralized dashboard for tracking the entire lifecycle of a tender, from creation to awarding and contract signing.
+**SLAM** هو تطبيق ويب متكامل لإدارة المناقصات والعقود والشركات والمهام. مصمم بالكامل لدعم اللغة العربية (RTL) ويوفر لوحة تحكم مركزية لتتبع دورة حياة المناقصة من البداية للنهاية.
 
-## 🚀 Tech Stack
+**Live Demo:** [https://slam-lake.vercel.app](https://slam-lake.vercel.app)
 
-### Frontend
+---
 
-- **Framework:** [React](https://react.dev/) + [Vite](https://vitejs.dev/)
-- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
-- **Language:** JavaScript
-- **Features:** Mobile-first responsive design, Dark/Light mode support (future-ready), dynamic modals.
+## 🚀 التقنيات المستخدمة
 
-### Backend
+| الجزء | التقنية |
+|-------|---------|
+| Frontend | React 18 + Vite |
+| Styling | Tailwind CSS |
+| Backend | Node.js (Vercel Serverless Functions) |
+| Database | SQLite via Turso (libSQL) |
+| Auth | JWT (Access + Refresh Tokens) |
 
-- **Runtime:** [Node.js](https://nodejs.org/) (Serverless Architecture via Vercel Functions).
-- **API:** RESTful endpoints in `/api`.
-- **Database:** SQLite (managed via **Turso** / `libSQL`).
-- **ORM/Query:** Direct SQL queries via `@libsql/client`.
-- **Authentication:** JWT (JSON Web Tokens).
+---
 
-## ✨ Key Features
+## ✨ المميزات الرئيسية
 
-### 1. 📊 Dashboard
+### 1. 📊 لوحة التحكم (Dashboard)
 
-- **Overview Stats:** Real-time counters for Companies, Tenders, Contracts, and Tasks.
-- **Quick Actions:** One-click access to create new entities (auto-opening modals).
-- **Recent Activity:** View the latest tenders and their status (Won, Lost, Pending).
+- إحصائيات فورية للشركات والمناقصات والعقود والمهام
+- أزرار سريعة لإضافة عناصر جديدة
+- عرض آخر المناقصات مع حالتها
 
-### 2. 📋 Tenders Management
+### 2. 📋 إدارة المناقصات
 
-- **Full Lifecycle Logic:** Track status (Open, Pending, Closed, Won, Lost).
-- **Detailed View:** Dedicated tabs for:
-  - **General Info:** Dates, Values, Instructions.
-  - **Items:** Specifications, Quantities, Delivery Schedules.
-  - **Competitors:** Track competitor prices and winners.
-  - **Attachments:** Image gallery with robust error handling (fallback placeholders).
-  - **Invoices:** Financial tracking and VAT calculations.
-  - **Reports:** Printable reports and Word export.
+- **دورة حياة كاملة:** مفتوحة → قيد الانتظار → مغلقة → فائز/خاسر
+- **تفاصيل شاملة:**
+  - البيانات العامة (التواريخ، القيم، التعليمات)
+  - الأصناف (المواصفات الفنية، الكميات، جدول التوريد)
+  - المنافسين (الأسعار، الفائز)
+  - المرفقات (صور وملفات PDF)
+  - الفواتير (التتبع المالي)
+  - التقارير (طباعة وتصدير Word)
 
-### 3. 🏢 Companies & Contracts
+### 3. 💰 الحسابات المالية (جديد!)
 
-- **Companies Database:** Centrally manage supplier/client details.
-- **Contracts Module:** Link tenders to contracts with value tracking and status (Draft, Active, Completed).
+- **ضريبة القيمة المضافة:** 14%
+- **ضريبة الخصم:** 1%
+- **التأمين الابتدائي:** 5%
+- **حساب تلقائي للإجمالي** مع إمكانية تفعيل/إلغاء كل ضريبة
 
-### 4. ✅ Task Management
+### 4. 🏢 الشركات والعقود
 
-- Simple to-do list integrated with other modules to track deadlines and responsibilities.
+- قاعدة بيانات مركزية للموردين والعملاء
+- ربط المناقصات بالعقود
 
-### 5. 🌍 Localization & Currency
+### 5. ✅ إدارة المهام
 
-- **Language:** Fully Arabic interface (RTL).
-- **Currency:** Egyptian Pound (ج.م) used throughout the application.
+- قائمة مهام مرتبطة بالمناقصات والعقود
 
-## 🛠️ Setup & Installation
+### 6. 🔔 نظام الإشعارات
 
-### Prerequisites
+- Toast Notifications للنجاح والخطأ
+- Loading States أثناء الحفظ
 
-- Node.js (v18+ recommended)
+---
+
+## 🛠️ التثبيت والتشغيل
+
+### المتطلبات
+
+- Node.js v18+
 - NPM
 
-### Installation Steps
+### خطوات التثبيت
 
-1. **Clone the repository**
+```bash
+# 1. استنساخ المشروع
+git clone https://github.com/ahmedmanch666/slam.git
+cd slam
 
-    ```bash
-    git clone <repository-url>
-    cd slam
-    ```
+# 2. تثبيت الـ Dependencies
+npm install
+cd frontend && npm install && cd ..
 
-2. **Install Dependencies**
-    - **Root/Backend:**
+# 3. إعداد ملف البيئة (.env)
+# أنشئ ملف .env في المجلد الرئيسي:
+TURSO_DATABASE_URL=libsql://your-database-url.turso.io
+TURSO_AUTH_TOKEN=your-turso-auth-token
+JWT_SECRET=your-secret-key
 
-        ```bash
-        npm install
-        ```
+# 4. تشغيل التطبيق
+# Frontend فقط:
+cd frontend && npm run dev
 
-    - **Frontend:**
+# Full Stack مع Vercel CLI:
+vercel dev
+```
 
-        ```bash
-        cd frontend
-        npm install
-        ```
+---
 
-3. **Environment Configuration**
-    Create a `.env` file in the root directory with the following keys:
+## 📁 هيكل المشروع
 
-    ```env
-    TURSO_DATABASE_URL=libsql://your-database-url.turso.io
-    TURSO_AUTH_TOKEN=your-turso-auth-token
-    JWT_SECRET=your-secret-key
-    ```
+```
+slam/
+├── api/                    # Serverless API Functions
+│   ├── _lib/              # Shared utilities (db, jwt, handlers)
+│   ├── auth/              # Login, Register, Refresh, Logout
+│   └── data/              # CRUD endpoints
+├── frontend/              # React Application
+│   ├── src/
+│   │   ├── components/    # Reusable components
+│   │   ├── context/       # Auth, Data, Toast contexts
+│   │   ├── hooks/         # Custom hooks
+│   │   └── pages/         # Route pages
+│   └── public/
+└── vercel.json            # Vercel configuration
+```
 
-4. **Run the Application**
-    - **Frontend Only (Dev):**
+---
 
-        ```bash
-        cd frontend
-        npm run dev
-        ```
+## 📊 حالة التطبيق (Status Report)
 
-    - **Full Stack (with Vercel CLI):**
+| الميزة | الحالة |
+|--------|--------|
+| تسجيل الدخول/الخروج | ✅ يعمل |
+| لوحة التحكم | ✅ يعمل |
+| إدارة الشركات | ✅ يعمل |
+| إدارة المناقصات | ✅ يعمل |
+| إدارة العقود | ✅ يعمل |
+| إدارة المهام | ✅ يعمل |
+| الأصناف | ✅ يعمل |
+| المنافسين | ✅ يعمل |
+| المرفقات (إضافة) | ✅ يعمل |
+| المرفقات (حذف) | ⚠️ قيد المراجعة |
+| الفواتير | ✅ يعمل |
+| التقارير | ✅ يعمل |
+| حسابات الضرائب | ✅ يعمل (14% VAT, 1% Withholding, 5% Insurance) |
+| Responsive Design | ✅ يعمل |
+| Toast Notifications | ✅ يعمل |
 
-        ```bash
-        vercel dev
-        ```
+---
 
-## 📸 Screenshots
+## 🐛 المشاكل المعروفة
 
-*(Add screenshots here for: Dashboard, Tender Details, Mobile View)*
+1. **حذف المرفقات:** في بعض الحالات قد لا يعمل الحذف بشكل صحيح - قيد التحقيق
 
-## 📄 License
+---
+
+## 📄 الترخيص
 
 Private / Proprietary.
+
+---
+
+## 👨‍💻 المطور
+
+Built with ❤️ using AI-assisted development (Claude/Gemini)
