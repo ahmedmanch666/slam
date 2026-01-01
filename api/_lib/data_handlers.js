@@ -279,8 +279,9 @@ const handlers = {
             return { status: 201, data: { success: true, id } };
         }
         if (method === 'DELETE') {
-            if (!body.id) return { status: 400, data: { error: 'Missing ID' } };
-            await db.execute({ sql: 'DELETE FROM tender_attachments WHERE id = ?', args: [body.id] });
+            const deleteId = body.id || query.id;
+            if (!deleteId) return { status: 400, data: { error: 'Missing ID' } };
+            await db.execute({ sql: 'DELETE FROM tender_attachments WHERE id = ?', args: [deleteId] });
             return { status: 200, data: { success: true } };
         }
     },

@@ -692,7 +692,7 @@ function AttachmentsTab({ attachments, tenderId, refresh }) {
         if (!confirm('حذف هذه الصورة؟')) return;
         try {
             console.log('Deleting attachment:', id);
-            const res = await fetch('/api/data?type=tender_attachments', {
+            const res = await fetch(`/api/data?type=tender_attachments&id=${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${auth.accessToken}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id })
