@@ -844,9 +844,31 @@ function AttachmentsTab({ attachments, tenderId, refresh }) {
                 {attachments.map(att => {
                     const isPdf = att.type === 'pdf' || (att.url && att.url.startsWith('data:application/pdf')) || (att.url && att.url.endsWith('.pdf'));
                     return (
-                        <div key={att.id} className="group relative bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition">
+                        <div key={att.id} className="relative bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition">
+                            {/* Delete button - always visible in corner */}
+                            <button
+                                onClick={() => handleDelete(att.id)}
+                                className="absolute top-2 right-2 z-10 bg-red-500 text-white w-8 h-8 rounded-full hover:bg-red-600 flex items-center justify-center shadow-lg"
+                                title="حذف"
+                            >
+                                🗑️
+                            </button>
+
+                            {/* Preview button - always visible */}
+                            <button
+                                onClick={() => setPreviewItem(att)}
+                                className="absolute top-2 left-2 z-10 bg-indigo-500 text-white w-8 h-8 rounded-full hover:bg-indigo-600 flex items-center justify-center shadow-lg"
+                                title="عرض"
+                            >
+                                {isPdf ? '📄' : '👁️'}
+                            </button>
+
+                            {/* Image/PDF Content */}
                             {isPdf ? (
-                                <div className="w-full h-40 bg-slate-100 flex flex-col items-center justify-center p-4 cursor-pointer" onClick={() => setPreviewItem(att)}>
+                                <div
+                                    className="w-full h-40 bg-slate-100 flex flex-col items-center justify-center p-4 cursor-pointer"
+                                    onClick={() => setPreviewItem(att)}
+                                >
                                     <span className="text-4xl">📄</span>
                                     <span className="text-xs text-slate-500 mt-2 text-center break-all px-2">ملف PDF</span>
                                 </div>
@@ -863,22 +885,6 @@ function AttachmentsTab({ attachments, tenderId, refresh }) {
                                     }}
                                 />
                             )}
-                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2 pointer-events-none">
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); setPreviewItem(att); }}
-                                    className="bg-white/20 text-white p-2 rounded-full hover:bg-white/40 pointer-events-auto"
-                                    title="عرض"
-                                >
-                                    {isPdf ? '⬇️' : '👁️'}
-                                </button>
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); handleDelete(att.id); }}
-                                    className="bg-red-500/80 text-white p-2 rounded-full hover:bg-red-600 pointer-events-auto"
-                                    title="حذف"
-                                >
-                                    🗑️
-                                </button>
-                            </div>
                         </div>
                     );
                 })}
