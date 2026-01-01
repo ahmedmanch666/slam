@@ -144,10 +144,30 @@ function GeneralTab({ tender, refresh }) {
     const [form, setForm] = useState({ ...tender });
     const [saving, setSaving] = useState(false);
 
+    // VAT & Tax calculations
+    const VAT_RATE = 0.14; // 14%
+    const WITHHOLDING_TAX_RATE = 0.01; // 1%
+    const INSURANCE_RATE = 0.05; // 5%
+
+    const baseValue = Number(form.value) || 0;
+    const vatAmount = form.include_vat ? baseValue * VAT_RATE : 0;
+    const withholdingAmount = form.include_withholding ? baseValue * WITHHOLDING_TAX_RATE : 0;
+    const insuranceAmount = form.include_insurance ? baseValue * INSURANCE_RATE : 0;
+    const totalWithAdditions = baseValue + vatAmount + insuranceAmount;
+    const totalAfterDeductions = totalWithAdditions - withholdingAmount;
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSaving(true);
-        const res = await saveItem('tenders', form);
+        // Save calculated values
+        const dataToSave = {
+            ...form,
+            vat_amount: vatAmount,
+            withholding_amount: withholdingAmount,
+            insurance_amount: insuranceAmount,
+            total_value: totalAfterDeductions
+        };
+        const res = await saveItem('tenders', dataToSave);
         if (res) {
             success('تم حفظ التعديلات بنجاح');
             refresh();
@@ -158,37 +178,103 @@ function GeneralTab({ tender, refresh }) {
     };
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setForm(prev => ({ ...prev, [name]: value }));
+        const { name, value, type, checked } = e.target;
+        setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     };
 
     return (
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="col-span-2 md:col-span-1">
                 <label className="block text-sm font-medium text-slate-700 mb-1">عنوان المناقصة</label>
-                <input type="text" name="title" value={form.title} onChange={handleChange} className="w-full p-2 border rounded-lg" required />
+                <input type="text" name="title" value={form.title || ''} onChange={handleChange} className="w-full p-2 border rounded-lg" />
             </div>
 
             <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">الحالة</label>
-                <select name="status" value={form.status} onChange={handleChange} className="w-full p-2 border rounded-lg">
+                <select name="status" value={form.status || 'open'} onChange={handleChange} className="w-full p-2 border rounded-lg">
                     <option value="open">مفتوحة</option>
                     <option value="pending">قيد الانتظار</option>
                     <option value="closed">مغلقة</option>
+                    <option value="won">ترسية (فائز)</option>
+                    <option value="lost">خاسر</option>
                 </select>
             </div>
 
-            <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">القيمة التقديرية</label>
-                <input type="number" name="value" value={form.value || ''} onChange={handleChange} className="w-full p-2 border rounded-lg" />
-            </div>
+            {/* Price Section */}
+            <div className="col-span-2 bg-gradient-to-r from-emerald-50 to-teal-50 p-4 rounded-xl border border-emerald-200">
+                <h3 className="text-lg font-bold text-emerald-800 mb-4">💰 الحسابات المالية</h3>
 
-            <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">حالة الضريبة</label>
-                <select name="vat_status" value={form.vat_status || 'exclusive'} onChange={handleChange} className="w-full p-2 border rounded-lg">
-                    <option value="exclusive">غير شامل الضريبة (15%)</option>
-                    <option value="inclusive">شامل الضريبة</option>
-                </select>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">القيمة (بدون ضريبة)</label>
+                        <input
+                            type="number"
+                            name="value"
+                            value={form.value || ''}
+                            onChange={handleChange}
+                            className="w-full p-2 border rounded-lg text-lg font-bold"
+                            placeholder="0.00"
+                            min="0"
+                            step="0.01"
+                        />
+                    </div>
+
+                    <div className="md:col-span-2 space-y-2">
+                        <div className="flex flex-wrap gap-4">
+                            <label className="flex items-center gap-2 cursor-pointer bg-white px-3 py-2 rounded-lg border hover:bg-emerald-50 transition">
+                                <input
+                                    type="checkbox"
+                                    name="include_vat"
+                                    checked={form.include_vat || false}
+                                    onChange={handleChange}
+                                    className="w-5 h-5 rounded text-emerald-600"
+                                />
+                                <span className="text-sm">ضريبة القيمة المضافة (14%)</span>
+                                {form.include_vat && <span className="text-emerald-600 font-bold">+{vatAmount.toLocaleString('ar-EG')}</span>}
+                            </label>
+
+                            <label className="flex items-center gap-2 cursor-pointer bg-white px-3 py-2 rounded-lg border hover:bg-amber-50 transition">
+                                <input
+                                    type="checkbox"
+                                    name="include_insurance"
+                                    checked={form.include_insurance || false}
+                                    onChange={handleChange}
+                                    className="w-5 h-5 rounded text-amber-600"
+                                />
+                                <span className="text-sm">تأمين ابتدائي (5%)</span>
+                                {form.include_insurance && <span className="text-amber-600 font-bold">+{insuranceAmount.toLocaleString('ar-EG')}</span>}
+                            </label>
+
+                            <label className="flex items-center gap-2 cursor-pointer bg-white px-3 py-2 rounded-lg border hover:bg-red-50 transition">
+                                <input
+                                    type="checkbox"
+                                    name="include_withholding"
+                                    checked={form.include_withholding || false}
+                                    onChange={handleChange}
+                                    className="w-5 h-5 rounded text-red-600"
+                                />
+                                <span className="text-sm">ضريبة الخصم (1%)</span>
+                                {form.include_withholding && <span className="text-red-600 font-bold">-{withholdingAmount.toLocaleString('ar-EG')}</span>}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Calculated Total */}
+                {baseValue > 0 && (
+                    <div className="mt-4 pt-4 border-t border-emerald-200 flex flex-wrap items-center gap-6">
+                        <div className="text-center">
+                            <p className="text-xs text-slate-500">الإجمالي</p>
+                            <p className="text-2xl font-bold text-emerald-700">{totalAfterDeductions.toLocaleString('ar-EG')} ج.م</p>
+                        </div>
+                        <div className="text-xs text-slate-500 space-y-1">
+                            <div>القيمة الأساسية: {baseValue.toLocaleString('ar-EG')}</div>
+                            {form.include_vat && <div>+ ضريبة 14%: {vatAmount.toLocaleString('ar-EG')}</div>}
+                            {form.include_insurance && <div>+ تأمين 5%: {insuranceAmount.toLocaleString('ar-EG')}</div>}
+                            {form.include_withholding && <div>- خصم 1%: {withholdingAmount.toLocaleString('ar-EG')}</div>}
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div>
@@ -238,6 +324,7 @@ function GeneralTab({ tender, refresh }) {
         </form>
     );
 }
+
 
 function ItemsTab({ items, tenderId, refresh }) {
     const { auth } = useAuth();

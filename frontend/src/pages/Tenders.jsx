@@ -252,7 +252,6 @@ export default function Tenders() {
 }
 
 function TenderForm({ tender, data, onClose, onSave }) {
-    const { error } = useToast();
     const [form, setForm] = useState({
         id: tender?.id || crypto.randomUUID(),
         title: tender?.title || '',
@@ -265,10 +264,7 @@ function TenderForm({ tender, data, onClose, onSave }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!form.title) {
-            error('عنوان المناقصة مطلوب');
-            return;
-        }
+        // Allow saving without all required fields
         setSaving(true);
         try {
             await onSave({ ...form, updatedAt: Date.now() });
