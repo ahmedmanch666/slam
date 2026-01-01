@@ -658,6 +658,7 @@ function AttachmentsTab({ attachments, tenderId, refresh }) {
     const { success, error } = useToast();
     const [url, setUrl] = useState('');
     const [uploading, setUploading] = useState(false);
+    const [previewItem, setPreviewItem] = useState(null);
 
     const handleAdd = async (e) => {
         e.preventDefault();
@@ -690,14 +691,24 @@ function AttachmentsTab({ attachments, tenderId, refresh }) {
     const handleDelete = async (id) => {
         if (!confirm('حذف هذه الصورة؟')) return;
         try {
-            await fetch('/api/data?type=tender_attachments', {
+            console.log('Deleting attachment:', id);
+            const res = await fetch('/api/data?type=tender_attachments', {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${auth.accessToken}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id })
             });
-            success('تم حذف المرفق بنجاح');
-            refresh();
-        } catch (e) { error('فشل الحذف'); }
+            const data = await res.json();
+            if (res.ok) {
+                success('تم حذف المرفق بنجاح');
+                refresh();
+            } else {
+                console.error('Delete failed:', data);
+                error('فشل الحذف: ' + (data.error || 'خطأ غير معروف'));
+            }
+        } catch (e) {
+            console.error('Delete error:', e);
+            error('فشل الحذف');
+        }
     };
 
     return (
@@ -748,7 +759,7 @@ function AttachmentsTab({ attachments, tenderId, refresh }) {
                     return (
                         <div key={att.id} className="group relative bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition">
                             {isPdf ? (
-                                <div className="w-full h-40 bg-slate-100 flex flex-col items-center justify-center p-4">
+                                <div className="w-full h-40 bg-slate-100 flex flex-col items-center justify-center p-4 cursor-pointer" onClick={() => setPreviewItem(att)}>
                                     <span className="text-4xl">📄</span>
                                     <span className="text-xs text-slate-500 mt-2 text-center break-all px-2">ملف PDF</span>
                                 </div>
@@ -756,7 +767,8 @@ function AttachmentsTab({ attachments, tenderId, refresh }) {
                                 <img
                                     src={att.url}
                                     alt="attachment"
-                                    className="w-full h-40 object-cover bg-slate-100"
+                                    className="w-full h-40 object-cover bg-slate-100 cursor-pointer"
+                                    onClick={() => setPreviewItem(att)}
                                     onError={(e) => {
                                         e.target.onerror = null;
                                         e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpolyline points='21 15 16 10 5 21'/%3E%3C/svg%3E";
@@ -764,20 +776,63 @@ function AttachmentsTab({ attachments, tenderId, refresh }) {
                                     }}
                                 />
                             )}
-                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
-                                <a href={att.url} target="_blank" rel="noopener noreferrer" className="bg-white/20 text-white p-2 rounded-full hover:bg-white/40" title="عرض">
+                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2 pointer-events-none">
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); setPreviewItem(att); }}
+                                    className="bg-white/20 text-white p-2 rounded-full hover:bg-white/40 pointer-events-auto"
+                                    title="عرض"
+                                >
                                     {isPdf ? '⬇️' : '👁️'}
-                                </a>
-                                <button onClick={() => handleDelete(att.id)} className="bg-red-500/80 text-white p-2 rounded-full hover:bg-red-600" title="حذف">🗑️</button>
+                                </button>
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); handleDelete(att.id); }}
+                                    className="bg-red-500/80 text-white p-2 rounded-full hover:bg-red-600 pointer-events-auto"
+                                    title="حذف"
+                                >
+                                    🗑️
+                                </button>
                             </div>
                         </div>
                     );
                 })}
             </div>
             {attachments.length === 0 && <div className="text-center py-8 text-slate-500">لا توجد صور مضافة</div>}
+
+            {previewItem && (
+                <ImagePreviewModal
+                    item={previewItem}
+                    onClose={() => setPreviewItem(null)}
+                />
+            )}
         </div>
     );
 }
+
+function ImagePreviewModal({ item, onClose }) {
+    if (!item) return null;
+    const isPdf = item.type === 'pdf' || (item.url && item.url.startsWith('data:application/pdf')) || (item.url && item.url.endsWith('.pdf'));
+
+    return (
+        <div className="fixed inset-0 bg-black/90 z-[70] flex items-center justify-center p-4 animate-in fade-in duration-200">
+            <button onClick={onClose} className="absolute top-4 right-4 text-white hover:text-gray-300 z-[80]">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <div className="relative w-full h-full flex items-center justify-center">
+                {isPdf ? (
+                    <iframe src={item.url} className="w-full h-full bg-white rounded-lg" title="PDF Preview"></iframe>
+                ) : (
+                    <img src={item.url} alt="Full Preview" className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" />
+                )}
+            </div>
+            <div className="absolute bottom-4 left-0 right-0 text-center text-white/80 pointer-events-none">
+                <p className="bg-black/50 inline-block px-4 py-1 rounded-full text-sm">
+                    {item.description || (isPdf ? 'ملف PDF' : 'صورة مرفقة')}
+                </p>
+            </div>
+        </div>
+    );
+}
+
 
 function InvoicesTab({ invoices, tenderId, refresh }) {
     const { auth } = useAuth();
