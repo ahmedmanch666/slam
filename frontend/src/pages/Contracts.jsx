@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useData } from '../context/DataContext';
+import { useToast } from '../context/ToastContext';
 import Layout from '../components/Layout';
 
 export default function Contracts() {
     const { data, saveItem, deleteItem, loading } = useData();
+    const { success, error } = useToast();
     const [search, setSearch] = useState('');
     const [showForm, setShowForm] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
@@ -29,7 +31,9 @@ export default function Contracts() {
 
     const handleDelete = async (item) => {
         if (confirm(`حذف العقد "${item.title}"؟`)) {
-            await deleteItem('contracts', item.id);
+            const res = await deleteItem('contracts', item.id);
+            if (res) success('تم حذف العقد بنجاح');
+            else error('فشل حذف العقد');
         }
     };
 
@@ -150,9 +154,13 @@ export default function Contracts() {
                         data={data}
                         onClose={() => setShowForm(false)}
                         onSave={async (formData) => {
-                            const success = await saveItem('contracts', formData);
-                            if (success) setShowForm(false);
-                            else alert('فشل الحفظ');
+                            const res = await saveItem('contracts', formData);
+                            if (res) {
+                                success('تم حفظ العقد بنجاح');
+                                setShowForm(false);
+                            } else {
+                                error('فشل حفظ العقد');
+                            }
                         }}
                     />
                 )}
@@ -162,6 +170,7 @@ export default function Contracts() {
 }
 
 function ContractForm({ item, data, onClose, onSave }) {
+    const { error } = useToast();
     const [form, setForm] = useState({
         id: item?.id || crypto.randomUUID(),
         title: item?.title || '',
@@ -178,7 +187,7 @@ function ContractForm({ item, data, onClose, onSave }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!form.title) return alert('العنوان مطلوب');
+        if (!form.title) return error('العنوان مطلوب');
         setSaving(true);
         try {
             await onSave({
@@ -256,8 +265,8 @@ function ContractForm({ item, data, onClose, onSave }) {
                     </div>
 
                     <div className="flex gap-3 pt-4">
-                        <button type="submit" disabled={saving} className="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 disabled:opacity-50 transition">
-                            {saving ? 'جاري الحفظ...' : 'حفظ'}
+                        <button type="submit" disabled={saving} className="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 disabled:opacity-50 transition flex items-center justify-center">
+                            {saving ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : 'حفظ'}
                         </button>
                         <button type="button" onClick={onClose} className="px-6 py-3 rounded-xl bg-slate-100 text-slate-700 font-semibold hover:bg-slate-200 transition">إلغاء</button>
                     </div>

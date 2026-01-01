@@ -1,11 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useData } from '../context/DataContext';
+import { useToast } from '../context/ToastContext';
 import Layout from '../components/Layout';
+
+import { useDebounce } from '../hooks/useDebounce';
 
 export default function Tasks() {
     const { data, saveItem, deleteItem, loading } = useData();
+    const { success, error } = useToast();
     const [search, setSearch] = useState('');
+    const debouncedSearch = useDebounce(search, 300);
+    const [statusFilter, setStatusFilter] = useState('');
     const [showForm, setShowForm] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
     const [searchParams, setSearchParams] = useSearchParams();
@@ -13,9 +19,11 @@ export default function Tasks() {
     // Auto-open add modal when ?add=true query param is present
     useEffect(() => {
         if (searchParams.get('add') === 'true') {
-            setEditingItem(null);
-            setShowForm(true);
-            setSearchParams({});
+            setTimeout(() => {
+                setEditingItem(null);
+                setShowForm(true);
+                setSearchParams({});
+            }, 0);
         }
     }, [searchParams, setSearchParams]);
 
@@ -38,14 +46,21 @@ export default function Tasks() {
         return new Date(a.dueDate || 0) - new Date(b.dueDate || 0);
     });
 
-    const filteredItems = sortedTasks.filter(item =>
-        item.title?.toLowerCase().includes(search.toLowerCase()) ||
-        item.notes?.toLowerCase().includes(search.toLowerCase())
-    );
+    const filteredItems = sortedTasks.filter(item => {
+        const matchText =
+            item.title?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+            item.notes?.toLowerCase().includes(debouncedSearch.toLowerCase());
+
+        const matchStatus = statusFilter ? item.status === statusFilter : true;
+
+        return matchText && matchStatus;
+    });
 
     const handleDelete = async (item) => {
         if (confirm(`حذف المهمة "${item.title}"؟`)) {
-            await deleteItem('tasks', item.id);
+            const res = await deleteItem('tasks', item.id);
+            if (res) success('تم حذف المهمة بنجاح');
+            else error('فشل حذف المهمة');
         }
     };
 
@@ -110,7 +125,7 @@ export default function Tasks() {
                     </button>
                 </div>
 
-                <div className="bg-white rounded-2xl p-4 border border-slate-200">
+                <div className="bg-white rounded-2xl p-4 border border-slate-200 space-y-4">
                     <input
                         type="text"
                         placeholder="بحث في المهام..."
@@ -118,6 +133,27 @@ export default function Tasks() {
                         onChange={(e) => setSearch(e.target.value)}
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 outline-none"
                     />
+                    <div className="flex gap-4">
+                        <select
+                            value={statusFilter}
+                            onChange={e => setStatusFilter(e.target.value)}
+                            className="px-4 py-2 rounded-xl border border-slate-200 bg-white"
+                        >
+                            <option value="">كل الحالات</option>
+                            <option value="pending">قيد الانتظار</option>
+                            <option value="in_progress">جاري العمل</option>
+                            <option value="completed">مكتملة</option>
+                            <option value="cancelled">ملغاة</option>
+                        </select>
+                        {(statusFilter || search) && (
+                            <button
+                                onClick={() => { setSearch(''); setStatusFilter(''); }}
+                                className="text-red-500 text-sm hover:underline px-2"
+                            >
+                                ✖ إعادة تعيين
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 {loading && <div className="text-center py-8 text-slate-500">جاري التحميل...</div>}
@@ -196,8 +232,13 @@ export default function Tasks() {
                         data={data}
                         onClose={() => setShowForm(false)}
                         onSave={async (formData) => {
-                            const success = await saveItem('tasks', formData);
-                            if (success) setShowForm(false);
+                            const res = await saveItem('tasks', formData);
+                            if (res) {
+                                success('تم حفظ المهمة بنجاح');
+                                setShowForm(false);
+                            } else {
+                                error('فشل حفظ المهمة');
+                            }
                         }}
                     />
                 )}
@@ -207,6 +248,7 @@ export default function Tasks() {
 }
 
 function TaskForm({ item, data, onClose, onSave }) {
+    const { error } = useToast();
     const [form, setForm] = useState({
         id: item?.id || crypto.randomUUID(),
         title: item?.title || '',
@@ -222,6 +264,7 @@ function TaskForm({ item, data, onClose, onSave }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!form.title) return error('العنوان مطلوب');
         setSaving(true);
         try {
             await onSave({
@@ -299,8 +342,8 @@ function TaskForm({ item, data, onClose, onSave }) {
                     </div>
 
                     <div className="flex gap-3 pt-4">
-                        <button type="submit" disabled={saving} className="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 disabled:opacity-50 transition">
-                            {saving ? 'جاري الحفظ...' : 'حفظ'}
+                        <button type="submit" disabled={saving} className="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 disabled:opacity-50 transition flex items-center justify-center">
+                            {saving ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : 'حفظ'}
                         </button>
                         <button type="button" onClick={onClose} className="px-6 py-3 rounded-xl bg-slate-100 text-slate-700 font-semibold hover:bg-slate-200 transition">إلغاء</button>
                     </div>

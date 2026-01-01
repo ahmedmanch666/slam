@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useData } from '../context/DataContext';
+import { useToast } from '../context/ToastContext';
 import Layout from '../components/Layout';
 
 export default function Companies() {
@@ -9,12 +10,14 @@ export default function Companies() {
     const [showForm, setShowForm] = useState(false);
     const [editingCompany, setEditingCompany] = useState(null);
     const [searchParams, setSearchParams] = useSearchParams();
+    const { success, error } = useToast();
 
     // Auto-open add modal when ?add=true query param is present
     useEffect(() => {
         if (searchParams.get('add') === 'true') {
             setEditingCompany(null);
             setShowForm(true);
+            // set search params empty without reload
             setSearchParams({});
         }
     }, [searchParams, setSearchParams]);
@@ -26,7 +29,9 @@ export default function Companies() {
 
     const handleDelete = async (company) => {
         if (confirm(`حذف الشركة "${company.name}"؟`)) {
-            await deleteItem('companies', company.id);
+            const res = await deleteItem('companies', company.id);
+            if (res) success('تم حذف الشركة بنجاح');
+            else error('فشل حذف الشركة');
         }
     };
 
@@ -127,12 +132,14 @@ export default function Companies() {
                         company={editingCompany}
                         onClose={() => setShowForm(false)}
                         onSave={async (companyData) => {
-                            const success = await saveItem('companies', companyData);
-                            if (success) {
+                            const result = await saveItem('companies', companyData);
+                            if (result) {
+                                success('تم حفظ بيانات الشركة بنجاح');
                                 setShowForm(false);
                             } else {
-                                alert('فشل حفظ الشركة. يرجى المحاولة مرة أخرى.');
+                                error('حدث خطأ أثناء حفظ الشركة');
                             }
+                            return result;
                         }}
                     />
                 )}
@@ -142,6 +149,7 @@ export default function Companies() {
 }
 
 function CompanyForm({ company, onClose, onSave }) {
+    const { error } = useToast();
     const [form, setForm] = useState({
         id: company?.id || crypto.randomUUID(),
         name: company?.name || '',
@@ -159,7 +167,7 @@ function CompanyForm({ company, onClose, onSave }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!form.name.trim()) {
-            alert('اسم الشركة مطلوب');
+            error('اسم الشركة مطلوب');
             return;
         }
         setSaving(true);
@@ -268,9 +276,9 @@ function CompanyForm({ company, onClose, onSave }) {
                         <button
                             type="submit"
                             disabled={saving}
-                            className="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 disabled:opacity-50 transition"
+                            className="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 disabled:opacity-50 transition flex items-center justify-center"
                         >
-                            {saving ? 'جاري الحفظ...' : (company ? 'حفظ التعديلات' : 'إضافة')}
+                            {saving ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : (company ? 'حفظ التعديلات' : 'إضافة')}
                         </button>
                         <button
                             type="button"

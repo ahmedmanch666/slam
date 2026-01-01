@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import Layout from '../components/Layout';
 
 // Sub-components will be defined here or imported
@@ -10,8 +11,9 @@ import Layout from '../components/Layout';
 export default function TenderDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { data: globalData, saveItem } = useData(); // Global data serves for cache
+    const { data: globalData } = useData(); // Global data serves for cache
     const { auth } = useAuth();
+    const { error: toastError } = useToast();
 
     const [tender, setTender] = useState(null);
     const [activeTab, setActiveTab] = useState('general');
@@ -62,7 +64,7 @@ export default function TenderDetails() {
 
         } catch (err) {
             console.error(err);
-            alert('فشل تحميل تفاصيل المناقصة');
+            toastError('فشل تحميل تفاصيل المناقصة');
         } finally {
             setLoading(false);
         }
@@ -138,16 +140,19 @@ export default function TenderDetails() {
 
 function GeneralTab({ tender, refresh }) {
     const { saveItem } = useData();
+    const { success, error } = useToast();
     const [form, setForm] = useState({ ...tender });
     const [saving, setSaving] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSaving(true);
-        const success = await saveItem('tenders', form);
-        if (success) {
-            alert('تم حفظ التعديلات بنجاح');
+        const res = await saveItem('tenders', form);
+        if (res) {
+            success('تم حفظ التعديلات بنجاح');
             refresh();
+        } else {
+            error('فشل حفظ التعديلات');
         }
         setSaving(false);
     };
@@ -226,8 +231,8 @@ function GeneralTab({ tender, refresh }) {
             </div>
 
             <div className="col-span-2 mt-4">
-                <button type="submit" disabled={saving} className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50">
-                    {saving ? 'جاري الحفظ...' : 'حفظ التعديلات'}
+                <button type="submit" disabled={saving} className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition flex items-center justify-center">
+                    {saving ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : 'حفظ التعديلات'}
                 </button>
             </div>
         </form>
@@ -236,6 +241,7 @@ function GeneralTab({ tender, refresh }) {
 
 function ItemsTab({ items, tenderId, refresh }) {
     const { auth } = useAuth();
+    const { success, error } = useToast();
     const [showModal, setShowModal] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
 
@@ -247,8 +253,9 @@ function ItemsTab({ items, tenderId, refresh }) {
                 headers: { 'Authorization': `Bearer ${auth.accessToken}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id })
             });
+            success('تم حذف الصنف بنجاح');
             refresh();
-        } catch (e) { alert('فشل الحذف'); }
+        } catch (e) { error('فشل الحذف'); }
     };
 
     return (
@@ -314,6 +321,7 @@ function ItemsTab({ items, tenderId, refresh }) {
 
 function ItemModal({ tenderId, item, onClose, onSave }) {
     const { auth } = useAuth();
+    const { success, error } = useToast();
     const [form, setForm] = useState({
         id: item?.id || crypto.randomUUID(),
         tender_id: tenderId,
@@ -322,6 +330,7 @@ function ItemModal({ tenderId, item, onClose, onSave }) {
         specifications: typeof item?.specifications === 'string' ? JSON.parse(item.specifications) : (item?.specifications || {}),
         delivery_schedule: typeof item?.delivery_schedule === 'string' ? JSON.parse(item.delivery_schedule || '{}') : (item?.delivery_schedule || {})
     });
+    const [saving, setSaving] = useState(false);
 
     const handleSpecChange = (field, value) => {
         setForm(prev => ({
@@ -339,14 +348,17 @@ function ItemModal({ tenderId, item, onClose, onSave }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setSaving(true);
         try {
             await fetch('/api/data?type=tender_items', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${auth.accessToken}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify(form)
             });
+            success('تم حفظ الصنف بنجاح');
             onSave();
-        } catch (e) { alert('فشل الحفظ'); }
+        } catch (e) { error('فشل الحفظ'); }
+        setSaving(false);
     };
 
     const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
@@ -497,7 +509,9 @@ function ItemModal({ tenderId, item, onClose, onSave }) {
 
                     {/* Actions */}
                     <div className="flex gap-2 pt-4 border-t">
-                        <button type="submit" className="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition">حفظ الصنف</button>
+                        <button type="submit" disabled={saving} className="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50 transition flex items-center justify-center">
+                            {saving ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : 'حفظ الصنف'}
+                        </button>
                         <button type="button" onClick={onClose} className="px-6 py-3 bg-slate-100 rounded-lg font-semibold hover:bg-slate-200 transition">إلغاء</button>
                     </div>
                 </form>
@@ -508,6 +522,7 @@ function ItemModal({ tenderId, item, onClose, onSave }) {
 
 function CompetitorsTab({ competitors, tenderId, refresh }) {
     const { auth } = useAuth();
+    const { success, error } = useToast();
     const [showModal, setShowModal] = useState(false);
     const [editingComp, setEditingComp] = useState(null);
 
@@ -519,8 +534,9 @@ function CompetitorsTab({ competitors, tenderId, refresh }) {
                 headers: { 'Authorization': `Bearer ${auth.accessToken}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id })
             });
+            success('تم حذف المنافس بنجاح');
             refresh();
-        } catch (e) { alert('فشل الحذف'); }
+        } catch (e) { error('فشل الحذف'); }
     };
 
     return (
@@ -578,6 +594,7 @@ function CompetitorsTab({ competitors, tenderId, refresh }) {
 
 function CompetitorModal({ tenderId, comp, onClose, onSave }) {
     const { auth } = useAuth();
+    const { success, error } = useToast();
     const [form, setForm] = useState({
         id: comp?.id || crypto.randomUUID(),
         tender_id: tenderId,
@@ -586,17 +603,21 @@ function CompetitorModal({ tenderId, comp, onClose, onSave }) {
         details: comp?.details || '',
         is_winner: comp?.is_winner || false
     });
+    const [saving, setSaving] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setSaving(true);
         try {
             await fetch('/api/data?type=tender_competitors', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${auth.accessToken}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify(form)
             });
+            success('تم حفظ المنافس بنجاح');
             onSave();
-        } catch (e) { alert('فشل الحفظ'); }
+        } catch (e) { error('فشل الحفظ'); }
+        setSaving(false);
     };
 
     return (
@@ -621,7 +642,9 @@ function CompetitorModal({ tenderId, comp, onClose, onSave }) {
                         <label htmlFor="is_winner" className="text-sm font-semibold cursor-pointer">ترسية المناقصة على هذا المنافس؟</label>
                     </div>
                     <div className="flex gap-2 pt-4">
-                        <button type="submit" className="flex-1 bg-indigo-600 text-white py-2 rounded">حفظ</button>
+                        <button type="submit" disabled={saving} className="flex-1 bg-indigo-600 text-white py-2 rounded flex items-center justify-center">
+                            {saving ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : 'حفظ'}
+                        </button>
                         <button type="button" onClick={onClose} className="px-4 bg-slate-100 rounded">إلغاء</button>
                     </div>
                 </form>
@@ -632,6 +655,7 @@ function CompetitorModal({ tenderId, comp, onClose, onSave }) {
 
 function AttachmentsTab({ attachments, tenderId, refresh }) {
     const { auth } = useAuth();
+    const { success, error } = useToast();
     const [url, setUrl] = useState('');
     const [uploading, setUploading] = useState(false);
 
@@ -639,6 +663,11 @@ function AttachmentsTab({ attachments, tenderId, refresh }) {
         e.preventDefault();
         if (!url) return;
         setUploading(true);
+
+        // Simple type detection from Data URI
+        const isPdf = url.startsWith('data:application/pdf');
+        const type = isPdf ? 'pdf' : 'image';
+
         try {
             await fetch('/api/data?type=tender_attachments', {
                 method: 'POST',
@@ -646,14 +675,15 @@ function AttachmentsTab({ attachments, tenderId, refresh }) {
                 body: JSON.stringify({
                     id: crypto.randomUUID(),
                     tender_id: tenderId,
-                    type: 'image',
+                    type: type,
                     url: url,
-                    description: 'صورة مضافة'
+                    description: isPdf ? 'ملف PDF' : 'صورة مضافة'
                 })
             });
             setUrl('');
+            success('تمت إضافة المرفق بنجاح');
             refresh();
-        } catch (e) { alert('فشل الإضافة'); }
+        } catch (e) { error('فشل الإضافة'); }
         setUploading(false);
     };
 
@@ -665,45 +695,84 @@ function AttachmentsTab({ attachments, tenderId, refresh }) {
                 headers: { 'Authorization': `Bearer ${auth.accessToken}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id })
             });
+            success('تم حذف المرفق بنجاح');
             refresh();
-        } catch (e) { alert('فشل الحذف'); }
+        } catch (e) { error('فشل الحذف'); }
     };
 
     return (
         <div>
-            <form onSubmit={handleAdd} className="flex gap-2 mb-6 p-4 bg-slate-50 rounded-xl">
+            <form onSubmit={handleAdd} className="flex gap-2 mb-6 p-4 bg-slate-50 rounded-xl flex-wrap">
                 <input
                     type="url"
                     value={url}
                     onChange={e => setUrl(e.target.value)}
-                    placeholder="ضع رابط الصورة هنا (http://...)"
-                    className="flex-1 p-2 border rounded-lg dir-ltr"
-                    required
+                    placeholder="رابط خارجي (http://...)"
+                    className="flex-1 p-2 border rounded-lg dir-ltr min-w-[200px]"
                 />
-                <button type="submit" disabled={uploading} className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50">
-                    {uploading ? 'جاري الإضافة...' : 'إضافة رابط'}
+
+                <div className="relative">
+                    <input
+                        type="file"
+                        id="file-upload"
+                        className="hidden"
+                        accept="image/*,.pdf"
+                        onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (!file) return;
+                            if (file.size > 5 * 1024 * 1024) {
+                                error('حجم الملف كبير جداً. الحد الأقصى 5 ميجابايت');
+                                return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = () => setUrl(reader.result);
+                            reader.readAsDataURL(file);
+                        }}
+                    />
+                    <label
+                        htmlFor="file-upload"
+                        className="cursor-pointer bg-slate-200 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-300 flex items-center gap-2 h-full"
+                    >
+                        📁 رفع ملف
+                    </label>
+                </div>
+
+                <button type="submit" disabled={uploading || !url} className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[100px]">
+                    {uploading ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : 'إضافة'}
                 </button>
             </form>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {attachments.map(att => (
-                    <div key={att.id} className="group relative bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition">
-                        <img
-                            src={att.url}
-                            alt="attachment"
-                            className="w-full h-40 object-cover bg-slate-100"
-                            onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpolyline points='21 15 16 10 5 21'/%3E%3C/svg%3E";
-                                e.target.className = "w-full h-40 object-contain p-8 bg-slate-50";
-                            }}
-                        />
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
-                            <a href={att.url} target="_blank" rel="noopener noreferrer" className="bg-white/20 text-white p-2 rounded-full hover:bg-white/40">👁️</a>
-                            <button onClick={() => handleDelete(att.id)} className="bg-red-500/80 text-white p-2 rounded-full hover:bg-red-600">🗑️</button>
+                {attachments.map(att => {
+                    const isPdf = att.type === 'pdf' || (att.url && att.url.startsWith('data:application/pdf')) || (att.url && att.url.endsWith('.pdf'));
+                    return (
+                        <div key={att.id} className="group relative bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition">
+                            {isPdf ? (
+                                <div className="w-full h-40 bg-slate-100 flex flex-col items-center justify-center p-4">
+                                    <span className="text-4xl">📄</span>
+                                    <span className="text-xs text-slate-500 mt-2 text-center break-all px-2">ملف PDF</span>
+                                </div>
+                            ) : (
+                                <img
+                                    src={att.url}
+                                    alt="attachment"
+                                    className="w-full h-40 object-cover bg-slate-100"
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpolyline points='21 15 16 10 5 21'/%3E%3C/svg%3E";
+                                        e.target.className = "w-full h-40 object-contain p-8 bg-slate-50";
+                                    }}
+                                />
+                            )}
+                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
+                                <a href={att.url} target="_blank" rel="noopener noreferrer" className="bg-white/20 text-white p-2 rounded-full hover:bg-white/40" title="عرض">
+                                    {isPdf ? '⬇️' : '👁️'}
+                                </a>
+                                <button onClick={() => handleDelete(att.id)} className="bg-red-500/80 text-white p-2 rounded-full hover:bg-red-600" title="حذف">🗑️</button>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
             {attachments.length === 0 && <div className="text-center py-8 text-slate-500">لا توجد صور مضافة</div>}
         </div>
@@ -712,6 +781,7 @@ function AttachmentsTab({ attachments, tenderId, refresh }) {
 
 function InvoicesTab({ invoices, tenderId, refresh }) {
     const { auth } = useAuth();
+    const { success, error } = useToast();
     const [showModal, setShowModal] = useState(false);
 
     const handleDelete = async (id) => {
@@ -722,8 +792,9 @@ function InvoicesTab({ invoices, tenderId, refresh }) {
                 headers: { 'Authorization': `Bearer ${auth.accessToken}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id })
             });
+            success('تم حذف الفاتورة بنجاح');
             refresh();
-        } catch (e) { alert('فشل الحذف'); }
+        } catch (e) { error('فشل الحذف'); }
     };
 
     return (
@@ -779,6 +850,7 @@ function InvoicesTab({ invoices, tenderId, refresh }) {
 
 function InvoiceModal({ tenderId, onClose, onSave }) {
     const { auth } = useAuth();
+    const { success, error } = useToast();
     const [form, setForm] = useState({
         id: crypto.randomUUID(),
         tender_id: tenderId,
@@ -787,9 +859,11 @@ function InvoiceModal({ tenderId, onClose, onSave }) {
         quantity: '',
         vat_amount: ''
     });
+    const [saving, setSaving] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setSaving(true);
         try {
             await fetch('/api/data?type=invoices', {
                 method: 'POST',
@@ -802,8 +876,10 @@ function InvoiceModal({ tenderId, onClose, onSave }) {
                     vat_amount: Number(form.vat_amount)
                 })
             });
+            success('تم حفظ الفاتورة بنجاح');
             onSave();
-        } catch (e) { alert('فشل الحفظ'); }
+        } catch (e) { error('فشل الحفظ'); }
+        setSaving(false);
     };
 
     return (
@@ -828,7 +904,9 @@ function InvoiceModal({ tenderId, onClose, onSave }) {
                         <input type="number" value={form.vat_amount} onChange={e => setForm({ ...form, vat_amount: e.target.value })} className="w-full p-2 border rounded" required />
                     </div>
                     <div className="flex gap-2 pt-4">
-                        <button type="submit" className="flex-1 bg-indigo-600 text-white py-2 rounded">حفظ</button>
+                        <button type="submit" disabled={saving} className="flex-1 bg-indigo-600 text-white py-2 rounded flex items-center justify-center">
+                            {saving ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : 'حفظ'}
+                        </button>
                         <button type="button" onClick={onClose} className="px-4 bg-slate-100 rounded">إلغاء</button>
                     </div>
                 </form>
