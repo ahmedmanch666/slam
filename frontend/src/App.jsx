@@ -10,6 +10,7 @@ import Tenders from './pages/Tenders';
 import TenderDetails from './pages/TenderDetails';
 import Contracts from './pages/Contracts';
 import Tasks from './pages/Tasks';
+import Profile from './pages/Profile';
 import './index.css';
 
 function ProtectedRoute({ children }) {
@@ -69,6 +70,11 @@ function AppRoutes() {
       <Route path="/tasks" element={
         <ProtectedRoute>
           <Tasks />
+        </ProtectedRoute>
+      } />
+      <Route path="/profile" element={
+        <ProtectedRoute>
+          <Profile />
         </ProtectedRoute>
       } />
       <Route path="*" element={<Navigate to="/" replace />} />

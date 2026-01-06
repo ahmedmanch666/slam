@@ -84,7 +84,7 @@ export default function Layout({ children }) {
 
                         {/* User */}
                         <div className={`mt-auto border-t ${theme === 'dark' ? 'border-slate-700' : 'border-slate-200'} pt-4`}>
-                            <div className="flex items-center gap-3 mb-3">
+                            <Link to="/profile" className="flex items-center gap-3 mb-3 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer">
                                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
                                     <span className="text-white font-bold">
                                         {auth?.email?.[0]?.toUpperCase() || 'U'}
@@ -98,7 +98,7 @@ export default function Layout({ children }) {
                                         {auth?.role === 'admin' ? 'مدير' : 'مستخدم'}
                                     </div>
                                 </div>
-                            </div>
+                            </Link>
                             <button
                                 onClick={handleLogout}
                                 className={`w-full p-3 rounded-xl text-sm font-semibold text-red-500 ${theme === 'dark' ? 'hover:bg-red-900/30' : 'hover:bg-red-50'} transition`}
