@@ -1,4 +1,4 @@
-const { initDb, getDb } = require('../_lib/db');
+const { initDb, getPool } = require('../_lib/db');
 const { verifyToken } = require('../_lib/jwt');
 const { json, send } = require('../_lib/http');
 const handlers = require('../_lib/data_handlers');
@@ -24,7 +24,7 @@ module.exports = async (req, res) => {
         if (!payload) return json(res, 401, { error: 'Invalid Token' });
 
         const userId = payload.sub;
-        const db = getDb();
+        const pool = getPool();
 
         // Get resource type from query parameter
         const { type } = req.query;
@@ -39,7 +39,7 @@ module.exports = async (req, res) => {
         }
 
         const handler = handlers[type];
-        const result = await handler(db, userId, req.method, body, req.query);
+        const result = await handler(pool, userId, req.method, body, req.query);
 
         if (!result) {
             return json(res, 405, { error: 'Method Not Allowed' });

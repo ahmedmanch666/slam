@@ -1,28 +1,37 @@
-const { createClient } = require('@libsql/client');
+const mysql = require('mysql2/promise');
 
-// Turso Database Connection
-let _db = null;
+// MySQL Database Connection Pool
+let _pool = null;
 let _initialized = false;
 
-function getDb() {
-  if (_db) return _db;
+function getPool() {
+  if (_pool) return _pool;
 
-  const url = process.env.TURSO_DATABASE_URL;
-  const authToken = process.env.TURSO_AUTH_TOKEN;
+  const host = process.env.MYSQL_HOST;
+  const user = process.env.MYSQL_USER;
+  const password = process.env.MYSQL_PASSWORD;
+  const database = process.env.MYSQL_DATABASE;
 
-  console.log('Connecting to Turso...', { urlExists: !!url, tokenExists: !!authToken });
+  console.log('Connecting to MySQL...', { host, user, database, hasPassword: !!password });
 
-  if (!url) {
-    console.error('Missing TURSO_DATABASE_URL environment variable');
-    throw new Error('Database not configured: Missing TURSO_DATABASE_URL');
+  if (!host || !user || !database) {
+    console.error('Missing MySQL configuration');
+    throw new Error('Database not configured: Missing MySQL environment variables');
   }
 
-  _db = createClient({
-    url,
-    authToken
+  _pool = mysql.createPool({
+    host,
+    user,
+    password,
+    database,
+    port: parseInt(process.env.MYSQL_PORT || '3306'),
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+    ssl: process.env.MYSQL_SSL === 'true' ? { rejectUnauthorized: false } : undefined
   });
 
-  return _db;
+  return _pool;
 }
 
 // Initialize database schema
@@ -30,282 +39,239 @@ async function initDb() {
   if (_initialized) return;
 
   try {
-    const db = getDb();
+    const pool = getPool();
 
     // Create users table
-    await db.execute(`
-        CREATE TABLE IF NOT EXISTS users (
-          id TEXT PRIMARY KEY,
-          email TEXT UNIQUE NOT NULL,
-          password_hash TEXT NOT NULL,
-          role TEXT DEFAULT 'user',
-          created_at INTEGER DEFAULT (unixepoch() * 1000)
-        )
-      `);
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS users (
+        id VARCHAR(36) PRIMARY KEY,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password_hash VARCHAR(255) NOT NULL,
+        role VARCHAR(50) DEFAULT 'user',
+        created_at BIGINT DEFAULT (UNIX_TIMESTAMP() * 1000)
+      )
+    `);
 
     // Create refresh_tokens table
-    await db.execute(`
-        CREATE TABLE IF NOT EXISTS refresh_tokens (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          token TEXT UNIQUE NOT NULL,
-          user_id TEXT NOT NULL,
-          expires_at INTEGER NOT NULL,
-          revoked INTEGER DEFAULT 0,
-          created_at INTEGER DEFAULT (unixepoch() * 1000),
-          FOREIGN KEY (user_id) REFERENCES users(id)
-        )
-      `);
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS refresh_tokens (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        token VARCHAR(500) UNIQUE NOT NULL,
+        user_id VARCHAR(36) NOT NULL,
+        expires_at BIGINT NOT NULL,
+        revoked TINYINT DEFAULT 0,
+        created_at BIGINT DEFAULT (UNIX_TIMESTAMP() * 1000),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    `);
 
     // Create companies table
-    await db.execute(`
-        CREATE TABLE IF NOT EXISTS companies (
-          id TEXT PRIMARY KEY,
-          user_id TEXT NOT NULL,
-          name TEXT NOT NULL,
-          phone TEXT,
-          phone2 TEXT,
-          email TEXT,
-          address TEXT,
-          notes TEXT,
-          sector TEXT,
-          created_at INTEGER DEFAULT (unixepoch() * 1000),
-          updated_at INTEGER,
-          FOREIGN KEY (user_id) REFERENCES users(id)
-        )
-      `);
-
-    // Migration: Add missing columns if they don't exist
-    try { await db.execute('ALTER TABLE companies ADD COLUMN sector TEXT'); } catch { }
-    try { await db.execute('ALTER TABLE companies ADD COLUMN phone2 TEXT'); } catch { }
-
-    // Create contacts table
-    await db.execute(`
-        CREATE TABLE IF NOT EXISTS contacts (
-          id TEXT PRIMARY KEY,
-          user_id TEXT NOT NULL,
-          company_id TEXT,
-          name TEXT NOT NULL,
-          position TEXT,
-          phone TEXT,
-          email TEXT,
-          notes TEXT,
-          created_at INTEGER DEFAULT (unixepoch() * 1000),
-          FOREIGN KEY (user_id) REFERENCES users(id)
-        )
-      `);
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS companies (
+        id VARCHAR(36) PRIMARY KEY,
+        user_id VARCHAR(36) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        phone VARCHAR(50),
+        phone2 VARCHAR(50),
+        email VARCHAR(255),
+        address TEXT,
+        notes TEXT,
+        sector VARCHAR(100),
+        created_at BIGINT DEFAULT (UNIX_TIMESTAMP() * 1000),
+        updated_at BIGINT,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    `);
 
     // Create tenders table
-    await db.execute(`
-        CREATE TABLE IF NOT EXISTS tenders (
-          id TEXT PRIMARY KEY,
-          user_id TEXT NOT NULL,
-          company_id TEXT,
-          title TEXT NOT NULL,
-          type TEXT,
-          status TEXT,
-          value REAL,
-          submission_date INTEGER,
-          notes TEXT,
-          sample_date INTEGER,
-          proof_date INTEGER,
-          delivery_duration TEXT,
-          vat_status TEXT,
-          gm_instructions TEXT,
-          dm_instructions TEXT,
-          created_at INTEGER DEFAULT (unixepoch() * 1000),
-          FOREIGN KEY (user_id) REFERENCES users(id)
-        )
-      `);
-
-    // Migration: Add missing columns to tenders if they don't exist
-    const tenderColumns = ['sample_date', 'proof_date', 'delivery_duration', 'vat_status', 'gm_instructions', 'dm_instructions'];
-    for (const col of tenderColumns) {
-      try { await db.execute(`ALTER TABLE tenders ADD COLUMN ${col} TEXT`); } catch { }
-    }
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS tenders (
+        id VARCHAR(36) PRIMARY KEY,
+        user_id VARCHAR(36) NOT NULL,
+        company_id VARCHAR(36),
+        title VARCHAR(255) NOT NULL,
+        type VARCHAR(100),
+        status VARCHAR(50),
+        value DECIMAL(15,2),
+        submission_date BIGINT,
+        notes TEXT,
+        sample_date BIGINT,
+        proof_date BIGINT,
+        delivery_duration VARCHAR(100),
+        vat_status VARCHAR(50),
+        gm_instructions TEXT,
+        dm_instructions TEXT,
+        include_vat TINYINT DEFAULT 0,
+        include_insurance TINYINT DEFAULT 0,
+        include_withholding TINYINT DEFAULT 0,
+        vat_amount DECIMAL(15,2),
+        withholding_amount DECIMAL(15,2),
+        insurance_amount DECIMAL(15,2),
+        total_value DECIMAL(15,2),
+        created_at BIGINT DEFAULT (UNIX_TIMESTAMP() * 1000),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    `);
 
     // Create contracts table
-    await db.execute(`
-        CREATE TABLE IF NOT EXISTS contracts (
-          id TEXT PRIMARY KEY,
-          user_id TEXT NOT NULL,
-          company_id TEXT,
-          tender_id TEXT,
-          title TEXT NOT NULL,
-          status TEXT,
-          value REAL,
-          start_date INTEGER,
-          end_date INTEGER,
-          notes TEXT,
-          created_at INTEGER DEFAULT (unixepoch() * 1000),
-          FOREIGN KEY (user_id) REFERENCES users(id)
-        )
-      `);
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS contracts (
+        id VARCHAR(36) PRIMARY KEY,
+        user_id VARCHAR(36) NOT NULL,
+        company_id VARCHAR(36),
+        tender_id VARCHAR(36),
+        title VARCHAR(255) NOT NULL,
+        status VARCHAR(50),
+        value DECIMAL(15,2),
+        start_date BIGINT,
+        end_date BIGINT,
+        notes TEXT,
+        created_at BIGINT DEFAULT (UNIX_TIMESTAMP() * 1000),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    `);
 
     // Create tasks table
-    await db.execute(`
-        CREATE TABLE IF NOT EXISTS tasks (
-          id TEXT PRIMARY KEY,
-          user_id TEXT NOT NULL,
-          related_type TEXT,
-          related_id TEXT,
-          title TEXT NOT NULL,
-          priority TEXT,
-          status TEXT,
-          due_date INTEGER,
-          notes TEXT,
-          created_at INTEGER DEFAULT (unixepoch() * 1000),
-          FOREIGN KEY (user_id) REFERENCES users(id)
-        )
-      `);
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS tasks (
+        id VARCHAR(36) PRIMARY KEY,
+        user_id VARCHAR(36) NOT NULL,
+        related_type VARCHAR(50),
+        related_id VARCHAR(36),
+        title VARCHAR(255) NOT NULL,
+        priority VARCHAR(50),
+        status VARCHAR(50),
+        due_date BIGINT,
+        notes TEXT,
+        created_at BIGINT DEFAULT (UNIX_TIMESTAMP() * 1000),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    `);
 
     // Create followups table
-    await db.execute(`
-        CREATE TABLE IF NOT EXISTS followups (
-          id TEXT PRIMARY KEY,
-          user_id TEXT NOT NULL,
-          related_type TEXT,
-          related_id TEXT,
-          type TEXT,
-          date INTEGER,
-          notes TEXT,
-          created_at INTEGER DEFAULT (unixepoch() * 1000),
-          FOREIGN KEY (user_id) REFERENCES users(id)
-        )
-      `);
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS followups (
+        id VARCHAR(36) PRIMARY KEY,
+        user_id VARCHAR(36) NOT NULL,
+        related_type VARCHAR(50),
+        related_id VARCHAR(36),
+        type VARCHAR(50),
+        date BIGINT,
+        notes TEXT,
+        created_at BIGINT DEFAULT (UNIX_TIMESTAMP() * 1000),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    `);
 
     // Create tender_items table
-    await db.execute(`
-        CREATE TABLE IF NOT EXISTS tender_items (
-          id TEXT PRIMARY KEY,
-          tender_id TEXT NOT NULL,
-          name TEXT NOT NULL,
-          quantity REAL,
-          specifications TEXT,
-          delivery_schedule TEXT,
-          created_at INTEGER DEFAULT (unixepoch() * 1000),
-          FOREIGN KEY (tender_id) REFERENCES tenders(id) ON DELETE CASCADE
-        )
-      `);
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS tender_items (
+        id VARCHAR(36) PRIMARY KEY,
+        tender_id VARCHAR(36) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        quantity DECIMAL(15,2),
+        specifications TEXT,
+        delivery_schedule TEXT,
+        created_at BIGINT DEFAULT (UNIX_TIMESTAMP() * 1000),
+        FOREIGN KEY (tender_id) REFERENCES tenders(id) ON DELETE CASCADE
+      )
+    `);
 
     // Create tender_competitors table
-    await db.execute(`
-        CREATE TABLE IF NOT EXISTS tender_competitors (
-          id TEXT PRIMARY KEY,
-          tender_id TEXT NOT NULL,
-          name TEXT NOT NULL,
-          details TEXT,
-          price REAL,
-          is_winner INTEGER DEFAULT 0,
-          created_at INTEGER DEFAULT (unixepoch() * 1000),
-          FOREIGN KEY (tender_id) REFERENCES tenders(id) ON DELETE CASCADE
-        )
-      `);
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS tender_competitors (
+        id VARCHAR(36) PRIMARY KEY,
+        tender_id VARCHAR(36) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        details TEXT,
+        price DECIMAL(15,2),
+        is_winner TINYINT DEFAULT 0,
+        created_at BIGINT DEFAULT (UNIX_TIMESTAMP() * 1000),
+        FOREIGN KEY (tender_id) REFERENCES tenders(id) ON DELETE CASCADE
+      )
+    `);
 
     // Create tender_attachments table
-    await db.execute(`
-        CREATE TABLE IF NOT EXISTS tender_attachments (
-          id TEXT PRIMARY KEY,
-          tender_id TEXT NOT NULL,
-          type TEXT,
-          url TEXT NOT NULL,
-          description TEXT,
-          created_at INTEGER DEFAULT (unixepoch() * 1000),
-          FOREIGN KEY (tender_id) REFERENCES tenders(id) ON DELETE CASCADE
-        )
-      `);
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS tender_attachments (
+        id VARCHAR(36) PRIMARY KEY,
+        tender_id VARCHAR(36) NOT NULL,
+        type VARCHAR(50),
+        url LONGTEXT NOT NULL,
+        description TEXT,
+        created_at BIGINT DEFAULT (UNIX_TIMESTAMP() * 1000),
+        FOREIGN KEY (tender_id) REFERENCES tenders(id) ON DELETE CASCADE
+      )
+    `);
 
     // Create invoices table
-    await db.execute(`
-        CREATE TABLE IF NOT EXISTS invoices (
-          id TEXT PRIMARY KEY,
-          tender_id TEXT NOT NULL,
-          date INTEGER,
-          amount REAL,
-          quantity REAL,
-          vat_amount REAL,
-          details TEXT,
-          created_at INTEGER DEFAULT (unixepoch() * 1000),
-          FOREIGN KEY (tender_id) REFERENCES tenders(id) ON DELETE CASCADE
-        )
-      `);
-
-    // Create indexes for faster lookups
-    await db.execute(`CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token ON refresh_tokens(token)`);
-    await db.execute(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
-    await db.execute(`CREATE INDEX IF NOT EXISTS idx_companies_user ON companies(user_id)`);
-    await db.execute(`CREATE INDEX IF NOT EXISTS idx_tenders_user ON tenders(user_id)`);
-    await db.execute(`CREATE INDEX IF NOT EXISTS idx_contracts_user ON contracts(user_id)`);
-    await db.execute(`CREATE INDEX IF NOT EXISTS idx_tasks_user ON tasks(user_id)`);
-    await db.execute(`CREATE INDEX IF NOT EXISTS idx_tender_items_tender ON tender_items(tender_id)`);
-    await db.execute(`CREATE INDEX IF NOT EXISTS idx_tender_competitors_tender ON tender_competitors(tender_id)`);
-    await db.execute(`CREATE INDEX IF NOT EXISTS idx_tender_attachments_tender ON tender_attachments(tender_id)`);
-    await db.execute(`CREATE INDEX IF NOT EXISTS idx_invoices_tender ON invoices(tender_id)`);
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS invoices (
+        id VARCHAR(36) PRIMARY KEY,
+        tender_id VARCHAR(36) NOT NULL,
+        date BIGINT,
+        amount DECIMAL(15,2),
+        quantity DECIMAL(15,2),
+        vat_amount DECIMAL(15,2),
+        details TEXT,
+        created_at BIGINT DEFAULT (UNIX_TIMESTAMP() * 1000),
+        FOREIGN KEY (tender_id) REFERENCES tenders(id) ON DELETE CASCADE
+      )
+    `);
 
     _initialized = true;
-    console.log('Database schema initialized successfully');
+    console.log('MySQL database schema initialized successfully');
   } catch (err) {
-    console.error('Failed to initialize database:', err.message);
+    console.error('Failed to initialize MySQL database:', err.message);
     throw err;
   }
 }
 
 // User operations
 async function findUserByEmail(email) {
-  const db = getDb();
-  const result = await db.execute({
-    sql: 'SELECT * FROM users WHERE email = ?',
-    args: [email]
-  });
-  return result.rows[0] || null;
+  const pool = getPool();
+  const [rows] = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);
+  return rows[0] || null;
 }
 
 async function findUserById(id) {
-  const db = getDb();
-  const result = await db.execute({
-    sql: 'SELECT * FROM users WHERE id = ?',
-    args: [id]
-  });
-  return result.rows[0] || null;
+  const pool = getPool();
+  const [rows] = await pool.execute('SELECT * FROM users WHERE id = ?', [id]);
+  return rows[0] || null;
 }
 
 async function createUser({ id, email, password_hash, role }) {
-  const db = getDb();
-  await db.execute({
-    sql: 'INSERT INTO users (id, email, password_hash, role) VALUES (?, ?, ?, ?)',
-    args: [id, email, password_hash, role]
-  });
+  const pool = getPool();
+  await pool.execute(
+    'INSERT INTO users (id, email, password_hash, role) VALUES (?, ?, ?, ?)',
+    [id, email, password_hash, role]
+  );
 }
 
 async function countUsers() {
-  const db = getDb();
-  const result = await db.execute('SELECT COUNT(*) as count FROM users');
-  return result.rows[0]?.count || 0;
+  const pool = getPool();
+  const [rows] = await pool.execute('SELECT COUNT(*) as count FROM users');
+  return rows[0]?.count || 0;
 }
 
 // Refresh token operations
 async function saveRefreshToken({ token, user_id, expires_at }) {
-  const db = getDb();
-  await db.execute({
-    sql: 'INSERT INTO refresh_tokens (token, user_id, expires_at) VALUES (?, ?, ?)',
-    args: [token, user_id, expires_at]
-  });
+  const pool = getPool();
+  await pool.execute(
+    'INSERT INTO refresh_tokens (token, user_id, expires_at) VALUES (?, ?, ?)',
+    [token, user_id, expires_at]
+  );
 }
 
 async function findRefreshToken(token) {
-  const db = getDb();
-  const result = await db.execute({
-    sql: 'SELECT * FROM refresh_tokens WHERE token = ?',
-    args: [token]
-  });
-  return result.rows[0] || null;
+  const pool = getPool();
+  const [rows] = await pool.execute('SELECT * FROM refresh_tokens WHERE token = ?', [token]);
+  return rows[0] || null;
 }
 
 async function revokeRefreshToken(token) {
-  const db = getDb();
-  await db.execute({
-    sql: 'UPDATE refresh_tokens SET revoked = 1 WHERE token = ?',
-    args: [token]
-  });
+  const pool = getPool();
+  await pool.execute('UPDATE refresh_tokens SET revoked = 1 WHERE token = ?', [token]);
 }
 
 // Helper to get current timestamp
@@ -313,8 +279,15 @@ function now() {
   return Date.now();
 }
 
+// Generic query executor for data handlers
+async function execute(sql, args = []) {
+  const pool = getPool();
+  const [rows] = await pool.execute(sql, args);
+  return { rows };
+}
+
 module.exports = {
-  getDb,
+  getPool,
   initDb,
   findUserByEmail,
   findUserById,
@@ -323,5 +296,6 @@ module.exports = {
   saveRefreshToken,
   findRefreshToken,
   revokeRefreshToken,
-  now
+  now,
+  execute
 };
