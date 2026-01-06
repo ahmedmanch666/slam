@@ -1,8 +1,8 @@
-# نظام مدير المناقصات (SLAM - Tender Manager System)
+# نظام مدير المناقصات (SLAM)
 
 ## 📌 نظرة عامة
 
-**SLAM** هو تطبيق ويب متكامل لإدارة المناقصات والعقود والشركات والمهام. مصمم بالكامل لدعم اللغة العربية (RTL) ويوفر لوحة تحكم مركزية لتتبع دورة حياة المناقصة من البداية للنهاية.
+**SLAM** هو تطبيق ويب متكامل لإدارة المناقصات والعقود والشركات والمهام. مصمم بالكامل لدعم اللغة العربية (RTL).
 
 **Live Demo:** [https://slam-lake.vercel.app](https://slam-lake.vercel.app)
 
@@ -11,54 +11,38 @@
 ## 🚀 التقنيات المستخدمة
 
 | الجزء | التقنية |
-|-------|---------|
+| --- | --- |
 | Frontend | React 18 + Vite |
 | Styling | Tailwind CSS |
-| Backend | Node.js (Vercel Serverless Functions) |
-| Database | SQLite via Turso (libSQL) |
+| Backend | Node.js (Vercel Serverless) |
+| Database | MySQL (HostGator) |
 | Auth | JWT (Access + Refresh Tokens) |
 
 ---
 
 ## ✨ المميزات الرئيسية
 
-### 1. 📊 لوحة التحكم (Dashboard)
+### 📊 لوحة التحكم
 
 - إحصائيات فورية للشركات والمناقصات والعقود والمهام
 - أزرار سريعة لإضافة عناصر جديدة
-- عرض آخر المناقصات مع حالتها
 
-### 2. 📋 إدارة المناقصات
+### 📋 إدارة المناقصات
 
-- **دورة حياة كاملة:** مفتوحة → قيد الانتظار → مغلقة → فائز/خاسر
-- **تفاصيل شاملة:**
-  - البيانات العامة (التواريخ، القيم، التعليمات)
-  - الأصناف (المواصفات الفنية، الكميات، جدول التوريد)
-  - المنافسين (الأسعار، الفائز)
-  - المرفقات (صور وملفات PDF)
-  - الفواتير (التتبع المالي)
-  - التقارير (طباعة وتصدير Word)
+- دورة حياة كاملة: مفتوحة → قيد الانتظار → مغلقة → فائز/خاسر
+- تفاصيل شاملة: البيانات العامة، الأصناف، المنافسين، المرفقات، الفواتير
 
-### 3. 💰 الحسابات المالية (جديد!)
+### 💰 الحسابات المالية
 
-- **ضريبة القيمة المضافة:** 14%
-- **ضريبة الخصم:** 1%
-- **التأمين الابتدائي:** 5%
-- **حساب تلقائي للإجمالي** مع إمكانية تفعيل/إلغاء كل ضريبة
+- ضريبة القيمة المضافة: **14%**
+- ضريبة الخصم: **1%**
+- التأمين الابتدائي: **5%**
+- حساب تلقائي للإجمالي
 
-### 4. 🏢 الشركات والعقود
+### 🏢 الشركات والعقود
 
 - قاعدة بيانات مركزية للموردين والعملاء
 - ربط المناقصات بالعقود
-
-### 5. ✅ إدارة المهام
-
-- قائمة مهام مرتبطة بالمناقصات والعقود
-
-### 6. 🔔 نظام الإشعارات
-
-- Toast Notifications للنجاح والخطأ
-- Loading States أثناء الحفظ
 
 ---
 
@@ -67,7 +51,7 @@
 ### المتطلبات
 
 - Node.js v18+
-- NPM
+- MySQL Database
 
 ### خطوات التثبيت
 
@@ -81,16 +65,15 @@ npm install
 cd frontend && npm install && cd ..
 
 # 3. إعداد ملف البيئة (.env)
-# أنشئ ملف .env في المجلد الرئيسي:
-TURSO_DATABASE_URL=libsql://your-database-url.turso.io
-TURSO_AUTH_TOKEN=your-turso-auth-token
-JWT_SECRET=your-secret-key
+MYSQL_HOST=your-host.hostgator.com
+MYSQL_USER=your_username
+MYSQL_PASSWORD=your_password
+MYSQL_DATABASE=your_database
+MYSQL_PORT=3306
+JWT_ACCESS_SECRET=your-secret
+JWT_REFRESH_SECRET=your-secret
 
 # 4. تشغيل التطبيق
-# Frontend فقط:
-cd frontend && npm run dev
-
-# Full Stack مع Vercel CLI:
 vercel dev
 ```
 
@@ -98,49 +81,42 @@ vercel dev
 
 ## 📁 هيكل المشروع
 
-```
+```text
 slam/
 ├── api/                    # Serverless API Functions
 │   ├── _lib/              # Shared utilities (db, jwt, handlers)
-│   ├── auth/              # Login, Register, Refresh, Logout
+│   ├── auth/              # Login, Register, Refresh
 │   └── data/              # CRUD endpoints
 ├── frontend/              # React Application
 │   ├── src/
 │   │   ├── components/    # Reusable components
 │   │   ├── context/       # Auth, Data, Toast contexts
-│   │   ├── hooks/         # Custom hooks
 │   │   └── pages/         # Route pages
-│   └── public/
+├── database/
+│   └── schema.sql         # MySQL schema
 └── vercel.json            # Vercel configuration
 ```
 
 ---
 
-## 📊 حالة التطبيق (Status Report)
+## 🗄️ إعداد قاعدة البيانات
 
-| الميزة | الحالة |
-|--------|--------|
-| تسجيل الدخول/الخروج | ✅ يعمل |
-| لوحة التحكم | ✅ يعمل |
-| إدارة الشركات | ✅ يعمل |
-| إدارة المناقصات | ✅ يعمل |
-| إدارة العقود | ✅ يعمل |
-| إدارة المهام | ✅ يعمل |
-| الأصناف | ✅ يعمل |
-| المنافسين | ✅ يعمل |
-| المرفقات (إضافة) | ✅ يعمل |
-| المرفقات (حذف) | ⚠️ قيد المراجعة |
-| الفواتير | ✅ يعمل |
-| التقارير | ✅ يعمل |
-| حسابات الضرائب | ✅ يعمل (14% VAT, 1% Withholding, 5% Insurance) |
-| Responsive Design | ✅ يعمل |
-| Toast Notifications | ✅ يعمل |
+1. أنشئ Database في HostGator cPanel
+2. أضف `%` في Remote MySQL للسماح بالاتصال الخارجي
+3. شغل ملف `database/schema.sql` في phpMyAdmin
+4. أضف المستخدم المشرف:
+
+```sql
+INSERT INTO users (id, email, password_hash, role, created_at) 
+VALUES ('seed_admin', 'admin@domain.com', 'not_used', 'admin', 1704067200000);
+```
 
 ---
 
-## 🐛 المشاكل المعروفة
+## 🔐 بيانات الدخول الافتراضية
 
-1. **حذف المرفقات:** في بعض الحالات قد لا يعمل الحذف بشكل صحيح - قيد التحقيق
+- **Email:** `admin@domain.com`
+- **Password:** `12345678`
 
 ---
 
@@ -152,4 +128,4 @@ Private / Proprietary.
 
 ## 👨‍💻 المطور
 
-Built with ❤️ using AI-assisted development (Claude/Gemini)
+Built with ❤️ using AI-assisted development
