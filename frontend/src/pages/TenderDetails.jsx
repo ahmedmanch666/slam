@@ -179,7 +179,16 @@ function GeneralTab({ tender, refresh }) {
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+        let newValue = value;
+
+        // Convert date strings to timestamps
+        if (type === 'date' && value) {
+            newValue = new Date(value).getTime();
+        } else if (type === 'checkbox') {
+            newValue = checked;
+        }
+
+        setForm(prev => ({ ...prev, [name]: newValue }));
     };
 
     return (
