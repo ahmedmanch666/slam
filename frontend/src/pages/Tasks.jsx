@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import { useToast } from '../context/ToastContext';
+import { useTheme } from '../context/ThemeContext';
 import Layout from '../components/Layout';
 
 import { useDebounce } from '../hooks/useDebounce';
@@ -9,6 +10,8 @@ import { useDebounce } from '../hooks/useDebounce';
 export default function Tasks() {
     const { data, saveItem, deleteItem, loading } = useData();
     const { success, error } = useToast();
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
     const [search, setSearch] = useState('');
     const debouncedSearch = useDebounce(search, 300);
     const [statusFilter, setStatusFilter] = useState('');
@@ -117,27 +120,27 @@ export default function Tasks() {
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900">المهام</h1>
-                        <p className="text-slate-600 mt-1">قائمة المهام والمتابعة</p>
+                        <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>المهام</h1>
+                        <p className={`${isDark ? 'text-slate-400' : 'text-slate-600'} mt-1`}>قائمة المهام والمتابعة</p>
                     </div>
                     <button onClick={handleAdd} className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition">
                         + إضافة مهمة
                     </button>
                 </div>
 
-                <div className="bg-white rounded-2xl p-4 border border-slate-200 space-y-4">
+                <div className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-2xl p-4 border space-y-4`}>
                     <input
                         type="text"
                         placeholder="بحث في المهام..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 outline-none"
+                        className={`w-full px-4 py-3 rounded-xl border ${isDark ? 'bg-slate-700 border-slate-600 text-white placeholder:text-slate-400' : 'border-slate-200'} focus:border-indigo-500 outline-none`}
                     />
                     <div className="flex gap-4">
                         <select
                             value={statusFilter}
                             onChange={e => setStatusFilter(e.target.value)}
-                            className="px-4 py-2 rounded-xl border border-slate-200 bg-white"
+                            className={`px-4 py-2 rounded-xl border ${isDark ? 'bg-slate-700 border-slate-600 text-white' : 'border-slate-200 bg-white'}`}
                         >
                             <option value="">كل الحالات</option>
                             <option value="pending">قيد الانتظار</option>
@@ -156,12 +159,12 @@ export default function Tasks() {
                     </div>
                 </div>
 
-                {loading && <div className="text-center py-8 text-slate-500">جاري التحميل...</div>}
+                {loading && <div className={`text-center py-8 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>جاري التحميل...</div>}
 
                 {filteredItems.length === 0 ? (
-                    <div className="text-center py-12 bg-white rounded-2xl border border-slate-200">
+                    <div className={`text-center py-12 ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-2xl border`}>
                         <span className="text-5xl">📝</span>
-                        <p className="text-slate-600 mt-4">لا يوجد مهام</p>
+                        <p className={`${isDark ? 'text-slate-400' : 'text-slate-600'} mt-4`}>لا يوجد مهام</p>
                         <button onClick={handleAdd} className="mt-4 px-4 py-2 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition">
                             إضافة مهمة جديدة
                         </button>
@@ -169,7 +172,7 @@ export default function Tasks() {
                 ) : (
                     <div className="grid gap-4">
                         {filteredItems.map(item => (
-                            <div key={item.id} className={`bg-white rounded-2xl p-4 sm:p-5 border transition hover:shadow-lg ${item.status === 'completed' ? 'border-green-200 bg-green-50/50' : 'border-slate-200'}`}>
+                            <div key={item.id} className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-2xl p-4 sm:p-5 border transition hover:shadow-lg ${item.status === 'completed' ? (isDark ? 'border-green-800 bg-green-900/30' : 'border-green-200 bg-green-50/50') : ''}`}>
                                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -188,14 +191,14 @@ export default function Tasks() {
                                             )}
                                         </div>
 
-                                        <h3 className={`text-lg font-bold text-slate-900 mb-1 ${item.status === 'completed' ? 'line-through text-slate-500' : ''}`}>
+                                        <h3 className={`text-lg font-bold mb-1 ${item.status === 'completed' ? 'line-through text-slate-500' : isDark ? 'text-white' : 'text-slate-900'}`}>
                                             {item.title}
                                         </h3>
 
-                                        {item.notes && <p className="text-slate-600 text-sm mb-2">{item.notes}</p>}
+                                        {item.notes && <p className={`${isDark ? 'text-slate-400' : 'text-slate-600'} text-sm mb-2`}>{item.notes}</p>}
 
                                         {item.relatedType && (
-                                            <div className="text-xs bg-slate-100 inline-block px-2 py-1 rounded text-slate-600">
+                                            <div className={`text-xs ${isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600'} inline-block px-2 py-1 rounded`}>
                                                 🔗 {getRelatedName(item.relatedType, item.relatedId)}
                                             </div>
                                         )}
