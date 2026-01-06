@@ -8,8 +8,9 @@ const handlers = {
             return { status: 200, data: { companies: rows } };
         }
         if (method === 'POST') {
-            const { id, name, phone, phone1, phone2, email, address, notes, sector } = body;
-            if (!id || !name) return { status: 400, data: { error: 'الاسم مطلوب' } };
+            const { name, phone, phone1, phone2, email, address, notes, sector } = body;
+            const id = body.id || require('crypto').randomUUID();
+            if (!name) return { status: 400, data: { error: 'الاسم مطلوب' } };
             await pool.execute(
                 `REPLACE INTO companies (id, user_id, name, phone, phone2, email, address, notes, sector, created_at) 
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -44,13 +45,13 @@ const handlers = {
         }
         if (method === 'POST') {
             const {
-                id, company_id, title, type, status, value,
+                company_id, title, type, status, value,
                 submission_date, notes, sample_date, proof_date,
                 delivery_duration, vat_status, gm_instructions, dm_instructions,
                 include_vat, include_insurance, include_withholding,
                 vat_amount, withholding_amount, insurance_amount, total_value
             } = body;
-            if (!id) return { status: 400, data: { error: 'ID مطلوب' } };
+            const id = body.id || require('crypto').randomUUID();
             await pool.execute(
                 `REPLACE INTO tenders (
                     id, user_id, company_id, title, type, status, value, 
@@ -115,8 +116,9 @@ const handlers = {
             return { status: 200, data: { contracts: rows } };
         }
         if (method === 'POST') {
-            const { id, company_id, tender_id, title, status, value, start_date, end_date, notes } = body;
-            if (!id || !title) return { status: 400, data: { error: 'العنوان مطلوب' } };
+            const { company_id, tender_id, title, status, value, start_date, end_date, notes } = body;
+            const id = body.id || require('crypto').randomUUID();
+            if (!title) return { status: 400, data: { error: 'العنوان مطلوب' } };
             await pool.execute(
                 `REPLACE INTO contracts (id, user_id, company_id, tender_id, title, status, value, start_date, end_date, notes, created_at) 
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -140,8 +142,9 @@ const handlers = {
             return { status: 200, data: { tasks: rows } };
         }
         if (method === 'POST') {
-            const { id, related_type, related_id, title, priority, status, due_date, notes } = body;
-            if (!id || !title) return { status: 400, data: { error: 'العنوان مطلوب' } };
+            const { related_type, related_id, title, priority, status, due_date, notes } = body;
+            const id = body.id || require('crypto').randomUUID();
+            if (!title) return { status: 400, data: { error: 'العنوان مطلوب' } };
             await pool.execute(
                 `REPLACE INTO tasks (id, user_id, related_type, related_id, title, priority, status, due_date, notes, created_at) 
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
