@@ -256,11 +256,16 @@ async function countUsers() {
 
 // Refresh token operations
 async function saveRefreshToken({ token, user_id, expires_at }) {
-  const pool = getPool();
-  await pool.execute(
-    'INSERT INTO refresh_tokens (token, user_id, expires_at) VALUES (?, ?, ?)',
-    [token, user_id, expires_at]
-  );
+  try {
+    const pool = getPool();
+    await pool.execute(
+      'INSERT INTO refresh_tokens (token, user_id, expires_at, created_at) VALUES (?, ?, ?, ?)',
+      [token, user_id, expires_at, Date.now()]
+    );
+  } catch (err) {
+    console.error('Error saving refresh token:', err.message);
+    // Don't throw - allow login to proceed even if token storage fails
+  }
 }
 
 async function findRefreshToken(token) {
