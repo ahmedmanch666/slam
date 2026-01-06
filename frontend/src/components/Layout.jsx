@@ -12,6 +12,10 @@ const navItems = [
     { path: '/tasks', label: 'المهام', icon: '✅' },
 ];
 
+const adminNavItems = [
+    { path: '/admin/users', label: 'المستخدمين', icon: '👥' },
+];
+
 export default function Layout({ children }) {
     const location = useLocation();
     const navigate = useNavigate();
@@ -80,6 +84,36 @@ export default function Layout({ children }) {
                                     </li>
                                 );
                             })}
+
+                            {/* Admin Section */}
+                            {auth?.role === 'admin' && (
+                                <>
+                                    <li className={`mt-4 pt-4 border-t ${theme === 'dark' ? 'border-slate-700' : 'border-slate-200'}`}>
+                                        <span className={`text-xs font-semibold ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'} px-3`}>
+                                            الإدارة
+                                        </span>
+                                    </li>
+                                    {adminNavItems.map((item) => {
+                                        const isActive = location.pathname.startsWith(item.path);
+                                        return (
+                                            <li key={item.path}>
+                                                <Link
+                                                    to={item.path}
+                                                    className={`group flex gap-x-3 rounded-xl p-3 text-sm font-semibold leading-6 transition ${isActive
+                                                        ? 'bg-amber-500 text-white'
+                                                        : theme === 'dark'
+                                                            ? 'text-slate-300 hover:text-white hover:bg-slate-700'
+                                                            : 'text-slate-700 hover:text-amber-600 hover:bg-amber-50'
+                                                        }`}
+                                                >
+                                                    <span className="text-lg">{item.icon}</span>
+                                                    {item.label}
+                                                </Link>
+                                            </li>
+                                        );
+                                    })}
+                                </>
+                            )}
                         </ul>
 
                         {/* User */}

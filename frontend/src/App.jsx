@@ -11,6 +11,7 @@ import TenderDetails from './pages/TenderDetails';
 import Contracts from './pages/Contracts';
 import Tasks from './pages/Tasks';
 import Profile from './pages/Profile';
+import AdminUsers from './pages/Admin/Users';
 import './index.css';
 
 function ProtectedRoute({ children }) {
@@ -75,6 +76,11 @@ function AppRoutes() {
       <Route path="/profile" element={
         <ProtectedRoute>
           <Profile />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/users" element={
+        <ProtectedRoute>
+          <AdminUsers />
         </ProtectedRoute>
       } />
       <Route path="*" element={<Navigate to="/" replace />} />
